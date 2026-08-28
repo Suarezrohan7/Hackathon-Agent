@@ -1,5 +1,6 @@
 id: case-09-regime-dependent
-title: Trend-following that works only while the trend lasts
+title: Trend-following that worked while the trend lasted, then didn't - regime-dependent,
+  not a durable edge
 seed: 1380
 human_minutes_baseline: 30
 human_minutes_advanced: 5

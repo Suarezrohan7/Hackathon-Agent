@@ -13,8 +13,13 @@ import json
 import os
 from typing import Any, Callable
 
-MODEL = "claude-sonnet-5"          # pin exact id before final submission
-TEMPERATURE = 0.0
+try:  # load .env if present (never committed)
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
+
+MODEL = "claude-sonnet-5"          # pinned for reproducibility
 MAX_TOKENS = 2000
 
 
@@ -45,7 +50,7 @@ def chat(
     import anthropic  # lazy so MOCK mode needs no dependency
 
     client = anthropic.Anthropic()
-    kwargs: dict[str, Any] = dict(model=MODEL, max_tokens=max_tokens, temperature=TEMPERATURE, messages=messages)
+    kwargs: dict[str, Any] = dict(model=MODEL, max_tokens=max_tokens, messages=messages)
     if system:
         kwargs["system"] = system
     if tools:

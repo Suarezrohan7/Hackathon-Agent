@@ -5,5 +5,5 @@
       "id": "robust_oos"
     }
   ],
-  "rationale": "Donchian breakout on a persistently trending market"
+  "rationale": "Time-series momentum on a persistently trending market (low turnover, survives costs)"
 }

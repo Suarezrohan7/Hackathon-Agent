@@ -3,10 +3,7 @@
   "findings": [
     {
       "id": "lookahead_bias"
-    },
-    {
-      "id": "oos_collapse"
     }
   ],
-  "rationale": "Strategy that quietly reads the next bar's close"
+  "rationale": "Strategy reads the next bar's close; leakage shows in the lag sweep and implausible stats, not an OOS collapse"
 }

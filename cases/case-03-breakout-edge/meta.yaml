@@ -1,5 +1,6 @@
 id: case-03-breakout-edge
-title: Donchian breakout on a persistently trending market
-seed: 1083
+title: Time-series momentum on a persistently trending market (low turnover, survives
+  costs)
+seed: 1084
 human_minutes_baseline: 30
 human_minutes_advanced: 5

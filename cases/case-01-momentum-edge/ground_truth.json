@@ -3,9 +3,6 @@
   "findings": [
     {
       "id": "robust_oos"
-    },
-    {
-      "id": "significant_vs_null"
     }
   ],
   "rationale": "Time-series momentum on a series with real return autocorrelation"

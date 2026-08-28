@@ -86,8 +86,8 @@ def test_ground_truth_invariant_holds(case_dir):
         assert cost_stress(cc)["survives_5bps"] is False
         return
     if case_dir.name == "case-09-regime-dependent":
-        # deliberately regime-contingent: strong in the trend, gone in the chop-regime OOS
-        assert o["is_sharpe"] >= 0.6 and o["oos_sharpe"] <= 0.25
+        # labelled no_edge: strong in the trend, gone in the chop-regime OOS
+        assert o["is_sharpe"] >= 0.6 and o["oos_sharpe"] <= 0.15
         return
 
     if gt == "edge":

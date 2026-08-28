@@ -31,7 +31,7 @@ from lib.pricegen import momentum_series, mean_revert_series, random_walk, _ohlc
 PPY = 252
 ALLOWED_FINDINGS = [
     "oos_collapse", "param_fragility", "lookahead_bias", "regime_dependence",
-    "transaction_cost_sensitivity", "insufficient_trades", "robust_oos", "significant_vs_null",
+    "transaction_cost_sensitivity", "insufficient_trades", "robust_oos",
 ]
 
 # --- self-contained strategy sources (what the trader hands you) --------------
@@ -151,8 +151,11 @@ def _grid_best(sigfn, grid: dict, df) -> tuple[dict, float]:
 
 # --- predicates: label true iff the case's behaviour is unambiguous -----------
 def pred_edge(is_df, oos_df, sigfn, p):
+    i = _bt(is_df, sigfn, p)["sharpe"]
     o = _bt(oos_df, sigfn, p)["sharpe"]
-    return o >= 0.5, f"OOS Sharpe {o:.2f} (want >=0.5)"
+    on = _bt(oos_df, sigfn, p, cost=5.0)["sharpe"]
+    ok = i >= 0.4 and o >= 0.5 and on >= 0.2
+    return ok, f"IS {i:.2f} / OOS {o:.2f} / OOS@5bps {on:.2f} (want IS>=0.4, OOS>=0.5, net>=0.2)"
 
 
 def pred_overfit(is_df, oos_df, sigfn, p):
@@ -179,9 +182,11 @@ def pred_lookahead(is_df, oos_df, sigfn, p):
 
 
 def pred_regime(is_df, oos_df, sigfn, p):
+    # label = no_edge: strong in-sample, gone out-of-sample because the regime changed.
+    # From evidence alone this is indistinguishable from luck, so we don't call it "edge".
     i = _bt(is_df, sigfn, p)["sharpe"]
     o = _bt(oos_df, sigfn, p)["sharpe"]
-    return (i >= 0.6 and o <= 0.25), f"IS {i:.2f} / OOS {o:.2f} (want IS>=0.6 trend, OOS<=0.25 chop)"
+    return (i >= 0.6 and o <= 0.15), f"IS {i:.2f} (trend) / OOS {o:.2f} (chop) (want IS>=0.6, OOS<=0.15)"
 
 
 def pred_cost(is_df, oos_df, sigfn, p):
@@ -200,20 +205,20 @@ def pred_thin(is_df, oos_df, sigfn, p):
 CASES = [
     dict(id="case-01-momentum-edge", label="edge", strat="tsmom",
          title="Time-series momentum on a series with real return autocorrelation",
-         findings=["robust_oos", "significant_vs_null"], gen="momentum", genkw=dict(phi=0.35),
+         findings=["robust_oos"], gen="momentum", genkw=dict(phi=0.35),
          params=dict(lookback=20), grid=dict(lookback=[5, 10, 20, 40, 60]), pred=pred_edge, n=1000),
     dict(id="case-02-meanrev-edge", label="edge", strat="rsi_reversion",
          title="RSI reversion on a mean-reverting (Ornstein-Uhlenbeck) series",
          findings=["robust_oos"], gen="meanrev", genkw=dict(kappa=0.06),
          params=dict(period=14, low=30, high=70),
          grid=dict(period=[7, 14, 21], low=[20, 30, 35], high=[65, 70, 80]), pred=pred_edge, n=1000),
-    dict(id="case-03-breakout-edge", label="edge", strat="donchian_breakout",
-         title="Donchian breakout on a persistently trending market",
-         findings=["robust_oos"], gen="trend", genkw=dict(mu=0.0005, sigma=0.011),
-         params=dict(lookback=20), grid=dict(lookback=[10, 15, 20, 30, 40]), pred=pred_edge, n=1000),
+    dict(id="case-03-breakout-edge", label="edge", strat="tsmom",
+         title="Time-series momentum on a persistently trending market (low turnover, survives costs)",
+         findings=["robust_oos"], gen="trend", genkw=dict(mu=0.0006, sigma=0.011),
+         params=dict(lookback=40), grid=dict(lookback=[20, 30, 40, 60]), pred=pred_edge, n=1000),
     dict(id="case-13-meanrev-edge-2", label="edge", strat="rsi_reversion",
          title="RSI reversion on a faster mean-reverting series",
-         findings=["robust_oos", "significant_vs_null"], gen="meanrev", genkw=dict(kappa=0.10),
+         findings=["robust_oos"], gen="meanrev", genkw=dict(kappa=0.10),
          params=dict(period=10, low=30, high=70),
          grid=dict(period=[7, 10, 14, 21], low=[20, 25, 30], high=[70, 75, 80]), pred=pred_edge, n=1000),
 
@@ -233,8 +238,8 @@ CASES = [
          grid=dict(a=[3, 5, 8], b=[12, 20, 30, 45], c=[9, 14, 20], d=[50, 56, 62], e=[6, 12, 24]),
          pred=pred_overfit, n=500),
     dict(id="case-06-lookahead-bug", label="overfit", strat="lookahead_cheat",
-         title="Strategy that quietly reads the next bar's close",
-         findings=["lookahead_bias", "oos_collapse"], gen="momentum", genkw=dict(phi=0.05),
+         title="Strategy reads the next bar's close; leakage shows in the lag sweep and implausible stats, not an OOS collapse",
+         findings=["lookahead_bias"], gen="momentum", genkw=dict(phi=0.05),
          params=dict(k=1), grid=dict(k=[1, 2, 3]), pred=pred_lookahead, n=1000),
 
     dict(id="case-07-no-edge-random", label="no_edge", strat="donchian_breakout",
@@ -247,8 +252,8 @@ CASES = [
          params=dict(period=14, low=30, high=70),
          grid=dict(period=[7, 14, 21], low=[25, 30], high=[70, 75]), pred=pred_no_edge_lucky, n=1000),
 
-    dict(id="case-09-regime-dependent", label="edge", strat="tsmom",
-         title="Trend-following that works only while the trend lasts",
+    dict(id="case-09-regime-dependent", label="no_edge", strat="tsmom",
+         title="Trend-following that worked while the trend lasted, then didn't - regime-dependent, not a durable edge",
          findings=["regime_dependence"], gen="trendchop", genkw=dict(mu=0.0012, sigma=0.009),
          params=dict(lookback=20), grid=dict(lookback=[10, 20, 40]), pred=pred_regime, n=1000),
     dict(id="case-10-cost-killed", label="no_edge", strat="rsi_reversion",

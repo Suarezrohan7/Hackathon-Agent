@@ -1,5 +1,6 @@
 id: case-06-lookahead-bug
-title: Strategy that quietly reads the next bar's close
+title: Strategy reads the next bar's close; leakage shows in the lag sweep and implausible
+  stats, not an OOS collapse
 seed: 1266
 human_minutes_baseline: 30
 human_minutes_advanced: 5

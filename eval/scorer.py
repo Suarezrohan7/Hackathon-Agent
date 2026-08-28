@@ -23,7 +23,7 @@ _VERDICT_SYNONYMS = {
 
 _ALLOWED_FINDINGS = {
     "oos_collapse", "param_fragility", "lookahead_bias", "regime_dependence",
-    "transaction_cost_sensitivity", "insufficient_trades", "robust_oos", "significant_vs_null",
+    "transaction_cost_sensitivity", "insufficient_trades", "robust_oos",
 }
 
 

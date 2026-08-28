@@ -71,12 +71,17 @@ def walk_forward(ctx: CheckCtx, k: int = 5) -> dict:
         })
     fixed = [f["test_sharpe_fixed"] for f in folds] or [0.0]
     refit = [f["test_sharpe_refit"] for f in folds] or [0.0]
+    # regime_like: the strategy is strongly positive in some folds and clearly negative in others
+    regime_like = len(fixed) >= 3 and max(fixed) > 0.6 and min(fixed) < -0.1
     return {
         "n_folds": len(folds),
         "wf_sharpe_fixed_mean": round(float(np.mean(fixed)), 3),
         "wf_sharpe_refit_mean": round(float(np.mean(refit)), 3),
+        "fold_sharpes_fixed": [round(x, 2) for x in fixed],
+        "regime_like": bool(regime_like),
         "folds": folds,
-        "reading": "Mean out-of-fold Sharpe near zero => no edge that survives honest re-testing.",
+        "reading": "Mean out-of-fold Sharpe near zero => no edge that survives honest re-testing; "
+                   "strongly positive in some folds and negative in others => regime-dependent.",
     }
 
 
@@ -131,6 +136,8 @@ def param_sensitivity(ctx: CheckCtx) -> dict:
 
     nb = [s for p, s in zip(grid_pts, sharpes) if is_neighbour(p)]
     neighbour_mean = float(np.mean(nb)) if nb else float(sharpes.mean())
+    plateau = _ratio(neighbour_mean, float(reported_s))
+    fragile = (reported_s > 0.3 and plateau is not None and not np.isnan(plateau) and plateau < 0.6)
     return {
         "grid_size": len(sharpes),
         "reported_sharpe": round(float(reported_s), 3),
@@ -138,8 +145,9 @@ def param_sensitivity(ctx: CheckCtx) -> dict:
         "median_sharpe": round(float(np.median(sharpes)), 3),
         "frac_positive": round(float((sharpes > 0).mean()), 3),
         "neighbour_mean_sharpe": round(neighbour_mean, 3),
-        "plateau_score": _ratio(neighbour_mean, float(reported_s)),
-        "reading": "plateau_score well below 1 (or negative) => the reported params are a lone spike, not a plateau.",
+        "plateau_score": plateau,
+        "fragile": bool(fragile),
+        "reading": "plateau_score well below 1 (or negative) => the reported params are a lone spike, not a plateau (fragile).",
     }
 
 
@@ -189,5 +197,5 @@ REGISTRY: dict[str, Callable[[CheckCtx], dict]] = {
 
 ALLOWED_FINDINGS = [
     "oos_collapse", "param_fragility", "lookahead_bias", "regime_dependence",
-    "transaction_cost_sensitivity", "insufficient_trades", "robust_oos", "significant_vs_null",
+    "transaction_cost_sensitivity", "insufficient_trades", "robust_oos",
 ]

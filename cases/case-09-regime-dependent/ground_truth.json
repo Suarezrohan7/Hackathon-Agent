@@ -1,9 +1,9 @@
 {
-  "verdict": "edge",
+  "verdict": "no_edge",
   "findings": [
     {
       "id": "regime_dependence"
     }
   ],
-  "rationale": "Trend-following that works only while the trend lasts"
+  "rationale": "Trend-following that worked while the trend lasted, then didn't - regime-dependent, not a durable edge"
 }
