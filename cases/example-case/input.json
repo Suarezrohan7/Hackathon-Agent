@@ -1,0 +1,4 @@
+{
+  "description": "Example input. The real shape depends on the locked domain.",
+  "payload": "Strategy Validation Agent draft: this would hold a strategy spec + a path to an OHLCV dataset. QA Agent draft: this would hold a path to the data file under review."
+}

@@ -1,0 +1,8 @@
+id: example-case
+title: "Placeholder case — proves the harness wiring end to end"
+notes: >
+  Replace this folder with real labelled cases once the domain is locked.
+  The harness reads meta.yaml + ground_truth.json; the solution reads whatever
+  input files you put here (input.json below is just an example).
+human_minutes_baseline: 20
+human_minutes_advanced: 4
