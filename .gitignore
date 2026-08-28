@@ -6,3 +6,6 @@ results/run-*/
 .DS_Store
 *.log
 results/app/
+trajectories/*
+!trajectories/.gitkeep
+!trajectories/reference/
