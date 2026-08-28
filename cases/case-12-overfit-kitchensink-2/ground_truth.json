@@ -1,0 +1,12 @@
+{
+  "verdict": "overfit",
+  "findings": [
+    {
+      "id": "oos_collapse"
+    },
+    {
+      "id": "param_fragility"
+    }
+  ],
+  "rationale": "Another 5-parameter fit on a different random history"
+}

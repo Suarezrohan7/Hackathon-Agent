@@ -1,0 +1,5 @@
+id: case-10-cost-killed
+title: Small gross edge that transaction costs erase
+seed: 1439
+human_minutes_baseline: 30
+human_minutes_advanced: 5

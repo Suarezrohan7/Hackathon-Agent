@@ -1,128 +1,203 @@
-"""Advanced solution — the engineered agent.
+"""Advanced solution — the engineered Strategy Validation Agent.
 
-Contract: run(case_dir, ctx) -> dict   (same input, same scorer as the baseline)
+    profile (deterministic)
+      -> plan + execute checks   (LLM chooses; tools return real numbers)
+      -> verify findings         (LLM keeps only what the numbers support)
+      -> decide                  (LLM; sees the evidence, NOT the glossy in-sample report)
+      -> human checkpoint        (a positive verdict is gated on sign-off)
 
-Skeleton only until the domain is locked. The shape it will take:
-
-    1. PROFILE   — deterministic pass over the input (no model) → structured facts
-    2. PLAN      — model picks which checks/tools matter for THIS case
-    3. EXECUTE   — tool loop: each check is a real function returning evidence
-    4. VERIFY    — a second model pass re-checks each finding against raw input
-                   to kill false positives (the anti-contamination / anti-hallucination step)
-    5. DECIDE    — model produces the final verdict + evidence, JSON only
-    6. HUMAN     — ctx surfaces a checkpoint before any consequential action
-
-Every step is logged to the Trajectory; every model call to the CostTracker.
+Contract: run(case_dir, ctx) -> {"verdict", "rationale", "findings":[{id, evidence}]}
 """
 
 from __future__ import annotations
 
+import importlib.util
 import json
+import re
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
+
+from advanced.checks import ALLOWED_FINDINGS, REGISTRY, CheckCtx
 from lib.llm import chat, run_tool_loop
 
-PLAN_SYSTEM = (
-    "You are a meticulous senior engineer. You are given structured facts about a "
-    "piece of work under review. Decide which of the available checks are worth "
-    "running and why. Be selective; justify each choice in one line."
-)
+_FUTURE = [r"shift\(\s*-", r"\.iloc\[[^\]]*\+\s*1", r"\[\s*i\s*\+\s*1\s*\]"]
 
-DECIDE_SYSTEM = (
-    "You are a meticulous senior engineer. Given the evidence gathered by the "
-    "checks, return ONLY JSON: {\"verdict\": \"...\", \"rationale\": \"...\", "
-    "\"findings\": [{\"id\": \"...\", \"evidence\": \"...\"}]}. "
-    "Every claim must point at evidence from the checks. No prose outside JSON."
-)
+PLAN_SYSTEM = f"""You audit whether a backtested trading strategy has a REAL edge or is
+curve-fit / lucky / buggy. You are given profile facts and a set of check tools.
 
+Rules:
+- You MUST call `oos_test` and `monte_carlo_permutation`.
+- Call `lookahead_probe` whenever the profile shows any future-reference flag OR the
+  reported Sharpe looks implausible.
+- Call `param_sensitivity` and `walk_forward` when parameters were or may have been tuned.
+- Call `cost_stress` when turnover/exposure looks high; `trade_count` always is cheap.
+- After you have enough evidence, STOP calling tools and write a short plain-text
+  summary of the raw numbers you gathered. Do not give a verdict yet."""
 
-# --- step 1: deterministic profile (no model) ----------------------------------
-def profile(case_dir: Path) -> dict[str, Any]:
-    """Cheap, deterministic facts about the input. Fill in per domain."""
-    files = [f.name for f in sorted(case_dir.iterdir())
-             if f.is_file() and f.name not in {"meta.yaml", "ground_truth.json"}]
-    return {"files": files, "note": "domain-specific profiling goes here"}
+VERIFY_SYSTEM = f"""You are a skeptical reviewer. Given raw check outputs, return ONLY a JSON list
+of findings. Each finding: {{"id": <one of {ALLOWED_FINDINGS}>, "evidence": "<the specific
+numbers that justify it>"}}. Include a finding ONLY if the numbers directly support it.
+`robust_oos` and `significant_vs_null` are positive findings — include them when warranted."""
 
+DECIDE_SYSTEM = """You issue the final verdict on a trading strategy. You are given the VERIFIED
+findings and a numeric digest of the checks. You are deliberately NOT given the strategy's
+own in-sample backtest report — decide only from the out-of-sample / statistical evidence.
 
-# --- step 3: the check tools -------------------------------------------------
-# Each tool is a plain function returning evidence. Registered for the model here.
-TOOLS: list[dict[str, Any]] = [
-    {
-        "name": "inspect",
-        "description": "Return the raw content of one input file for close reading.",
-        "input_schema": {
-            "type": "object",
-            "properties": {"filename": {"type": "string"}},
-            "required": ["filename"],
-        },
-    },
-    # domain checks get added here: walk_forward / monte_carlo / param_sensitivity
-    # for the strategy agent; schema_diff / totals_row_scan / type_drift for QA.
-]
+Return ONLY JSON: {"verdict": "edge"|"overfit"|"no_edge", "rationale": "...",
+"findings": [{"id": "...", "evidence": "..."}]}
+
+Guidance (use judgement, these are not hard rules):
+- "overfit": a look-ahead flag is present, OR in-sample looked strong but oos_over_is < ~0.35
+  AND param plateau_score < ~0.5 (a lone spike).
+- "no_edge": oos_sharpe < ~0.3 and p_value >= ~0.10, or the edge dies under costs, without a
+  strong tuning/look-ahead signature.
+- "edge": oos_sharpe >= ~0.45 AND p_value < ~0.10 AND survives costs AND no look-ahead flag.
+  Still report findings like `regime_dependence` or `insufficient_trades` when present."""
 
 
-def make_dispatch(case_dir: Path):
-    def dispatch(name: str, args: dict[str, Any]) -> Any:
-        if name == "inspect":
-            p = case_dir / args["filename"]
-            if not p.exists():
-                raise FileNotFoundError(args["filename"])
-            return {"filename": p.name, "content": p.read_text(encoding="utf-8", errors="replace")[:8000]}
-        raise ValueError(f"unknown tool: {name}")
-    return dispatch
+def _load_strategy(case_dir: Path):
+    spec = importlib.util.spec_from_file_location(f"strat_{case_dir.name}", case_dir / "strategy.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)  # type: ignore
+    return mod
 
 
-# --- step 5: parse the verdict --------------------------------------------------
-def _parse_json(text: str) -> dict[str, Any]:
-    try:
-        return json.loads(text[text.find("{"): text.rfind("}") + 1])
-    except Exception:
-        return {"verdict": "", "rationale": f"unparseable: {text[:200]}", "findings": []}
-
-
-def run(case_dir: Path, ctx: Any) -> dict[str, Any]:
-    tr = ctx.trajectory()
-
-    tr.note("step 1 — deterministic profile")
-    facts = profile(case_dir)
-
-    tr.note("step 2/3 — plan + execute checks via tool loop")
-    gathered = run_tool_loop(
-        system=PLAN_SYSTEM,
-        user=(
-            "Structured facts about the work under review:\n"
-            f"{json.dumps(facts, indent=2)}\n\n"
-            "Use the tools to gather the evidence you need, then summarise what you found."
-        ),
-        tools=TOOLS,
-        dispatch=make_dispatch(case_dir),
-        tracker=ctx.tracker,
-        trajectory=tr,
-        tag="advanced.plan_execute",
+def _build_ctx(case_dir: Path) -> CheckCtx:
+    mod = _load_strategy(case_dir)
+    report = json.loads((case_dir / "backtest_report.json").read_text(encoding="utf-8"))
+    return CheckCtx(
+        signal=mod.signal,
+        params=dict(report.get("params", getattr(mod, "PARAMS", {}))),
+        param_grid=dict(report.get("param_grid", getattr(mod, "PARAM_GRID", {}))),
+        prices_is=pd.read_csv(case_dir / "data.csv"),
+        prices_oos=pd.read_csv(case_dir / "data_oos.csv"),
+        report=report,
+        strategy_src=(case_dir / "strategy.py").read_text(encoding="utf-8"),
+        ppy=int(report.get("periods_per_year", 252)),
     )
 
-    tr.note("step 4 — verify findings against raw input")
-    verified = chat(
-        [{"role": "user", "content": (
-            "Here is the evidence gathered:\n" + gathered +
-            "\n\nRe-check each finding against the raw facts. Drop anything not "
-            "directly supported. Return the surviving evidence as a short list."
-        )}],
-        system="You are a skeptical reviewer. Remove unsupported claims.",
-        tracker=ctx.tracker, trajectory=tr, tag="advanced.verify",
-    )["text"]
 
-    tr.note("step 5 — final verdict")
-    decided = chat(
-        [{"role": "user", "content": f"Verified evidence:\n{verified}\n\nGive the final verdict."}],
-        system=DECIDE_SYSTEM,
-        tracker=ctx.tracker, trajectory=tr, tag="advanced.decide",
-    )["text"]
-    pred = _parse_json(decided)
+def _profile(cc: CheckCtx) -> dict:
+    ins = cc.report.get("in_sample", {})
+    return {
+        "n_params": len(cc.params),
+        "param_names": list(cc.params),
+        "param_grid_size": max(1, _grid_size(cc.param_grid)),
+        "reported_is_sharpe": ins.get("sharpe"),
+        "reported_max_drawdown": ins.get("max_drawdown"),
+        "reported_n_trades": ins.get("n_trades"),
+        "reported_exposure": ins.get("exposure"),
+        "static_future_reference_flags": [p for p in _FUTURE if re.search(p, cc.strategy_src)],
+    }
 
-    # step 6 — human checkpoint before any consequential action (none yet in skeleton)
-    tr.human_checkpoint("Consequential action to take based on this verdict?", decision="none — read-only analysis")
 
-    tr.finish(pred)
-    return pred
+def _grid_size(grid: dict) -> int:
+    out = 1
+    for v in grid.values():
+        out *= max(1, len(v))
+    return out
+
+
+TOOLS = [{"name": name, "description": fn.__doc__ or f"run the {name} check",
+          "input_schema": {"type": "object", "properties": {}}} for name, fn in REGISTRY.items()]
+
+
+def _digest(gathered: dict) -> dict:
+    o = gathered.get("oos_test", {})
+    mc = gathered.get("monte_carlo_permutation", {})
+    wf = gathered.get("walk_forward", {})
+    ps = gathered.get("param_sensitivity", {})
+    la = gathered.get("lookahead_probe", {})
+    cs = gathered.get("cost_stress", {})
+    tc = gathered.get("trade_count", {})
+    return {
+        "oos_sharpe": o.get("oos_sharpe"),
+        "oos_over_is": o.get("oos_over_is"),
+        "mc_p_value": mc.get("p_value"),
+        "walk_forward_fixed_mean": wf.get("wf_sharpe_fixed_mean"),
+        "param_plateau_score": ps.get("plateau_score"),
+        "lookahead_suspected": la.get("suspected"),
+        "lookahead_static_flags": la.get("static_flags"),
+        "cost_survives_5bps": cs.get("survives_5bps"),
+        "n_trades": tc.get("n_trades"),
+        "checks_run": sorted(gathered),
+    }
+
+
+def _parse(text: str, default: Any):
+    try:
+        start = text.find("[") if default == [] else text.find("{")
+        end = text.rfind("]") if default == [] else text.rfind("}")
+        return json.loads(text[start:end + 1])
+    except Exception:
+        return default
+
+
+def run(case_dir: Path, ctx: Any, *, return_detail: bool = False) -> Any:
+    tr = ctx.trajectory()
+    cc = _build_ctx(case_dir)
+
+    prof = _profile(cc)
+    tr.note(f"profile: {json.dumps(prof)}")
+
+    gathered: dict[str, dict] = {}
+
+    def dispatch(name: str, _args: dict) -> Any:
+        res = REGISTRY[name](cc)
+        gathered[name] = res
+        return res
+
+    summary = run_tool_loop(
+        system=PLAN_SYSTEM,
+        user="Profile facts:\n" + json.dumps(prof, indent=2) +
+             "\n\nRun the checks you judge necessary, then summarise the raw numbers.",
+        tools=TOOLS, dispatch=dispatch,
+        tracker=ctx.tracker, trajectory=tr, tag="advanced.plan_execute", max_steps=14,
+    )
+    # safety net: guarantee the critical evidence exists even if the planner under-called.
+    # The model still chooses ordering, reasoning, and any extra checks.
+    mandatory = ["oos_test", "monte_carlo_permutation", "trade_count"]
+    if prof["static_future_reference_flags"]:
+        mandatory.append("lookahead_probe")
+    if prof["param_grid_size"] > 4:
+        mandatory.append("param_sensitivity")
+    for must in mandatory:
+        if must not in gathered:
+            tr.retry(f"safety net: required check '{must}' not run by the planner; running it directly")
+            dispatch(must, {})
+
+    tr.note("verify findings against raw numbers")
+    verified = _parse(chat(
+        [{"role": "user", "content": "Raw check outputs:\n" + json.dumps(gathered, indent=2, default=str) +
+          "\n\nEvidence summary from the run:\n" + summary}],
+        system=VERIFY_SYSTEM, tracker=ctx.tracker, trajectory=tr, tag="advanced.verify",
+    )["text"], default=[])
+
+    digest = _digest(gathered)
+    tr.note(f"digest: {json.dumps(digest, default=str)}")
+
+    decided = _parse(chat(
+        [{"role": "user", "content":
+          "Verified findings:\n" + json.dumps(verified, indent=2, default=str) +
+          "\n\nNumeric digest of the checks:\n" + json.dumps(digest, indent=2, default=str) +
+          "\n\nIssue the final verdict."}],
+        system=DECIDE_SYSTEM, tracker=ctx.tracker, trajectory=tr, tag="advanced.decide",
+    )["text"], default={"verdict": "", "rationale": "unparseable", "findings": []})
+
+    if not isinstance(decided, dict):
+        decided = {"verdict": "", "rationale": "unparseable", "findings": []}
+    decided.setdefault("findings", verified if isinstance(verified, list) else [])
+
+    if str(decided.get("verdict", "")).lower().strip() == "edge":
+        tr.human_checkpoint(
+            "Verdict = edge. Advance this strategy to a paper-trading track before any live capital?",
+            decision="pending human reviewer sign-off",
+        )
+
+    arts = tr.finish(decided)
+    if return_detail:
+        return decided, {"profile": prof, "digest": digest, "gathered": gathered,
+                         "verified_findings": verified, "trajectory": arts}
+    return decided

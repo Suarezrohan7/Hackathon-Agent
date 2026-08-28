@@ -1,0 +1,12 @@
+{
+  "verdict": "overfit",
+  "findings": [
+    {
+      "id": "lookahead_bias"
+    },
+    {
+      "id": "oos_collapse"
+    }
+  ],
+  "rationale": "Strategy that quietly reads the next bar's close"
+}

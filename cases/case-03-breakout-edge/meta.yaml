@@ -1,0 +1,5 @@
+id: case-03-breakout-edge
+title: Donchian breakout on a persistently trending market
+seed: 1083
+human_minutes_baseline: 30
+human_minutes_advanced: 5

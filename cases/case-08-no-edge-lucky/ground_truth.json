@@ -1,0 +1,9 @@
+{
+  "verdict": "no_edge",
+  "findings": [
+    {
+      "id": "oos_collapse"
+    }
+  ],
+  "rationale": "Untuned strategy that happened to look great on one history"
+}

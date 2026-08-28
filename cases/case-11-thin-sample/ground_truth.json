@@ -1,0 +1,12 @@
+{
+  "verdict": "edge",
+  "findings": [
+    {
+      "id": "insufficient_trades"
+    },
+    {
+      "id": "robust_oos"
+    }
+  ],
+  "rationale": "Real edge, but only a handful of trades to judge it on"
+}

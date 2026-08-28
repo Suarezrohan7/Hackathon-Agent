@@ -1,0 +1,52 @@
+{
+  "strategy_module": "strategy.py",
+  "params": {
+    "a": 8,
+    "b": 20,
+    "c": 21,
+    "d": 62,
+    "e": 5
+  },
+  "param_grid": {
+    "a": [
+      3,
+      5,
+      8,
+      12
+    ],
+    "b": [
+      15,
+      20,
+      30,
+      45
+    ],
+    "c": [
+      7,
+      14,
+      21
+    ],
+    "d": [
+      52,
+      56,
+      62
+    ],
+    "e": [
+      5,
+      10,
+      20
+    ]
+  },
+  "periods_per_year": 252,
+  "data_file": "data.csv",
+  "oos_data_file": "data_oos.csv",
+  "in_sample": {
+    "sharpe": 1.79,
+    "cagr": 0.1421,
+    "max_drawdown": -0.044,
+    "win_rate": 0.5463,
+    "n_trades": 108,
+    "total_return": 0.3015,
+    "exposure": 0.724
+  },
+  "note": "These are IN-SAMPLE results only."
+}

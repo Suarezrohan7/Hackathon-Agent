@@ -31,6 +31,7 @@ import yaml
 
 from eval.scorer import PRIMARY_METRIC, score
 from lib.cost import CostTracker
+from lib.report import render as render_html
 from lib.trajectory import Trajectory
 
 
@@ -139,8 +140,16 @@ def write_report(out_dir: Path, rows: list[dict], aggs: dict[str, dict]) -> None
             e="yes" if r["error"] else "",
         ))
     (out_dir / "summary.md").write_text("\n".join(lines), encoding="utf-8")
+
+    try:
+        from lib.llm import MODEL
+        html_path = render_html(out_dir, rows, aggs,
+                                {"title": "Strategy Validation Agent", "model": MODEL})
+    except Exception as e:  # a report failure must not lose the run
+        html_path = f"(report skipped: {e})"
+
     print("\n".join(lines))
-    print(f"\nwrote {out_dir/'summary.md'} and {out_dir/'raw.json'}")
+    print(f"\nwrote {out_dir/'summary.md'}, {out_dir/'raw.json'}, {html_path}")
 
 
 def main() -> None:

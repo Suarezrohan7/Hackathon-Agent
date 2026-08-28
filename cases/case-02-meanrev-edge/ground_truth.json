@@ -1,0 +1,9 @@
+{
+  "verdict": "edge",
+  "findings": [
+    {
+      "id": "robust_oos"
+    }
+  ],
+  "rationale": "RSI reversion on a mean-reverting (Ornstein-Uhlenbeck) series"
+}

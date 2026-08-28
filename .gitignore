@@ -5,3 +5,4 @@ __pycache__/
 results/run-*/
 .DS_Store
 *.log
+results/app/

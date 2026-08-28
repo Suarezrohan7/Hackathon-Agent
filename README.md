@@ -1,56 +1,116 @@
-# [PROJECT NAME] — micro1 Frontier Engineering Challenge 2026
+# Strategy Validation Agent
 
-> One-line pitch. Fill after domain is locked.
+**An agent that tells you whether a backtested trading strategy has a real edge — or is curve-fit, lucky, or buggy — and backs the verdict with out-of-sample and statistical evidence.**
 
-## The user and their bottleneck
-**Who has the problem:** _[specific role/person]_
+Built for the micro1 Frontier Engineering Challenge 2026. Theme: *build at the frontier of agentic AI, where correctness, reproducibility and human judgment matter.*
 
-**The bottleneck:** _[why the task is slow / error-prone / easy to get wrong today]_
+---
 
-**Why solving it matters:** _[concrete value]_
+## The user and the bottleneck
 
-## What existed before this competition vs. what was added
-| Existed before | Added for this challenge |
+**Who:** an independent / retail algorithmic trader, or a junior quant at a small fund, about to allocate real capital to a strategy whose backtest looks good.
+
+**The bottleneck:** a good-looking backtest is the *default* outcome of searching over strategies and parameters — most are curve-fit or lucky. Telling a real edge from an artefact means running a disciplined battery:
+
+- out-of-sample test on data the strategy was never fitted to
+- walk-forward (rolling re-fit) evaluation
+- Monte-Carlo permutation — is the in-sample Sharpe within what random data produces?
+- parameter-sensitivity — is the chosen parameter a broad plateau or a lone spike?
+- look-ahead-leak probe — does the "edge" survive an honest execution lag?
+- transaction-cost stress
+- trade-count adequacy
+
+Each step needs judgement, the whole battery is tedious, and it is routinely skipped or half-done. People lose real money on strategies that never had an edge. *Convincing is not enough* — which is exactly this challenge's premise.
+
+---
+
+## What existed before vs. what was built for the challenge
+
+| Existed before | Built for this challenge |
 |---|---|
-| _[prior code / libraries / your past projects reused]_ | _[the agent design, eval harness, test cases, docs]_ |
+| The author's prior trading projects (backtesting discipline, risk-gate patterns, the habit of rejecting overfit changes) — none of that code is reused here | Everything in this repo: the backtest engine, the synthetic-data ground-truth generator, the 7 check functions, the baseline, the agent pipeline, the eval harness, the trajectory capture, the HTML report, the dashboard, the tests |
+| `anthropic`, `numpy`, `pandas`, `flask` (standard libraries) | The agent design and all orchestration around them |
 
-## Baseline vs. advanced solution
-- **Baseline** (`baseline/run.py`): _[the reasonable simple approach — one prompt / one generic agent / a script]_
-- **Advanced** (`advanced/run.py`): _[the engineered agent — orchestration, tools, verification, memory]_
+---
 
-Both take the **same input** and are scored on the **same cases** by `eval/`.
+## Baseline vs. advanced (both required)
+
+| | **Baseline** — `baseline/run.py` | **Advanced** — `advanced/run.py` |
+|---|---|---|
+| Method | One model call: strategy source + its in-sample backtest report → verdict. No data, no tools. | `profile` (deterministic) → `plan + execute` checks (model chooses; tools return real numbers) → `verify` findings (model keeps only what the numbers support) → `decide` → human checkpoint |
+| Key property | Anchors on the glossy in-sample Sharpe — the failure this challenge is about | The **in-sample report is withheld from the deciding step**; the verdict is forced to rest on out-of-sample / statistical evidence only. A deterministic **safety net** guarantees the critical checks always ran, even if the planner under-calls. A positive verdict is **gated on human sign-off** before any live-capital step. |
+
+Both take the **same input** and are scored on the **same 13 cases** by `eval/`.
+
+---
+
+## Trustworthy ground truth
+
+The eval only means something if the labels are certain. `cases/generate.py` builds 13 cases from **synthetic price series with known statistical properties** (real AR(1) momentum / Ornstein-Uhlenbeck mean-reversion / random walk / trend-then-chop) paired with strategies whose relationship to that data we control. Generation and validation are the **same check**: for each case the script searches a fixed seed range for one where the labelled behaviour is unambiguous (an `edge` case really holds out-of-sample; an `overfit` case really collapses; the look-ahead bug really shows up). If no seed qualifies, generation fails — a case can never ship with an ambiguous label.
+
+The 13 committed cases: 6 `edge` (incl. a regime-dependent one and a thin-sample one), 4 `overfit` (incl. a look-ahead bug and two grid-searched fits), 3 `no_edge` (incl. one that only looks good in-sample by luck, and one killed by transaction costs).
+
+---
 
 ## Headline result
+
 | Metric | Baseline | Advanced | Change |
 |---|---|---|---|
-| Primary outcome _[define]_ | – | – | – |
-| Human time per task | – | – | – |
-| Cost per task (USD) | – | – | – |
+| Verdict accuracy (13 cases) | _pending real run_ | _pending real run_ | – |
+| Findings F1 | – | – | – |
+| USD per case | – | – | – |
 
-_Generated by `python -m eval.harness --which both`; see `results/` for the full run._
+Regenerate with `python -m eval.harness --which both`; full run lands in `results/run-<timestamp>/` (`summary.md`, `report.html`, `raw.json`) with per-agent trajectories under `trajectories/`.
+
+---
 
 ## Repo layout
+
 ```
-baseline/      the simple baseline solution
-advanced/      the engineered agent solution
-eval/          harness + scorer + report — runs both on the same cases
-lib/           trajectory capture, cost tracking, shared LLM client
-cases/         labelled test cases (input + ground truth)
-trajectories/  captured agent runs (submission artifact)
-results/       eval output (metric tables, per-case detail)
+baseline/run.py       the simple baseline
+advanced/
+  run.py              the engineered agent pipeline
+  checks.py           7 deterministic robustness checks (no LLM)
+eval/
+  harness.py          runs baseline + advanced on the same cases -> metric table + HTML report
+  scorer.py           verdict accuracy + findings precision/recall/F1
+lib/
+  backtest.py         minimal vectorised backtester (no look-ahead by construction)
+  pricegen.py         synthetic price processes with known properties
+  llm.py              pinned Claude client + tool loop + MOCK mode
+  trajectory.py       step-by-step capture -> .md + .jsonl  (submission artifact)
+  cost.py             token + USD accounting
+  report.py           self-contained dark-theme HTML report
+cases/
+  generate.py         (re)builds the 13 labelled cases, self-validating
+  case-*/             the frozen test set (committed)
+tests/test_pipeline.py  key-free correctness + ground-truth-invariant tests
+app.py                local dashboard: paste a strategy, watch it get validated
 ```
+
+---
 
 ## Run it
-See `REPRODUCTION.md` for a clean-environment walkthrough. Quick version:
+
+Full walkthrough in [`REPRODUCTION.md`](REPRODUCTION.md). Short version:
+
 ```bash
-python -m venv .venv && . .venv/Scripts/activate      # Windows
+python -m venv .venv && . .venv/Scripts/activate     # Windows (.venv/bin/activate elsewhere)
 pip install -r requirements.txt
-cp .env.example .env                                  # add ANTHROPIC_API_KEY
-python -m eval.harness --which both --cases cases/
+python -m pytest -q                                  # 22 tests, no API key needed
+cp .env.example .env                                 # add ANTHROPIC_API_KEY
+python -m eval.harness --which both                  # the headline comparison
+python app.py                                        # optional dashboard -> http://127.0.0.1:7600
 ```
 
+`python -m cases.generate --seed 7 --fresh` regenerates the test set byte-for-byte; `--check` re-validates the committed one.
+
+---
+
 ## Changelog & hot take
-See [`IMPROVEMENT_CHANGELOG.md`](IMPROVEMENT_CHANGELOG.md) — every iteration, its evidence, and the decision it drove. Main failure mode + hot take at the bottom of that file.
+
+[`IMPROVEMENT_CHANGELOG.md`](IMPROVEMENT_CHANGELOG.md) — every iteration, its evidence, the decision it drove; main failure mode and hot take at the bottom.
 
 ## Coding tools disclosure
-Built with Claude Code (Claude Sonnet). Agent trajectories for every agent used are in `trajectories/`.
+
+Built with Claude Code (Claude Sonnet). Representative agent trajectories for both the baseline and the advanced agent are under `trajectories/`.

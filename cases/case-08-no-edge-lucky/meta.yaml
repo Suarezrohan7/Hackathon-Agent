@@ -1,0 +1,5 @@
+id: case-08-no-edge-lucky
+title: Untuned strategy that happened to look great on one history
+seed: 1381
+human_minutes_baseline: 30
+human_minutes_advanced: 5

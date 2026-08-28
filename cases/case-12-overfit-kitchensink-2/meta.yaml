@@ -1,0 +1,5 @@
+id: case-12-overfit-kitchensink-2
+title: Another 5-parameter fit on a different random history
+seed: 1230
+human_minutes_baseline: 30
+human_minutes_advanced: 5

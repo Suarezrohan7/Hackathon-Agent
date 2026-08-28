@@ -1,0 +1,26 @@
+{
+  "strategy_module": "strategy.py",
+  "params": {
+    "lookback": 35
+  },
+  "param_grid": {
+    "lookback": [
+      20,
+      35,
+      55
+    ]
+  },
+  "periods_per_year": 252,
+  "data_file": "data.csv",
+  "oos_data_file": "data_oos.csv",
+  "in_sample": {
+    "sharpe": 1.1272,
+    "cagr": 0.2055,
+    "max_drawdown": -0.1427,
+    "win_rate": 0.4,
+    "n_trades": 5,
+    "total_return": 0.2679,
+    "exposure": 0.8719
+  },
+  "note": "These are IN-SAMPLE results only."
+}

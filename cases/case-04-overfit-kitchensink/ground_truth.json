@@ -1,0 +1,12 @@
+{
+  "verdict": "overfit",
+  "findings": [
+    {
+      "id": "oos_collapse"
+    },
+    {
+      "id": "param_fragility"
+    }
+  ],
+  "rationale": "5-parameter strategy grid-searched to fit one random history"
+}

@@ -1,0 +1,9 @@
+{
+  "verdict": "no_edge",
+  "findings": [
+    {
+      "id": "transaction_cost_sensitivity"
+    }
+  ],
+  "rationale": "Small gross edge that transaction costs erase"
+}

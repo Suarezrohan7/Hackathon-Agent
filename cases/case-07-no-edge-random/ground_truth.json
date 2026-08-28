@@ -1,0 +1,5 @@
+{
+  "verdict": "no_edge",
+  "findings": [],
+  "rationale": "Breakout strategy on a pure random walk"
+}

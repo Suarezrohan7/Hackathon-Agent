@@ -1,0 +1,5 @@
+id: case-04-overfit-kitchensink
+title: 5-parameter strategy grid-searched to fit one random history
+seed: 1165
+human_minutes_baseline: 30
+human_minutes_advanced: 5

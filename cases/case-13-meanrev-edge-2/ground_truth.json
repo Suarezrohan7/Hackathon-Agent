@@ -1,0 +1,12 @@
+{
+  "verdict": "edge",
+  "findings": [
+    {
+      "id": "robust_oos"
+    },
+    {
+      "id": "significant_vs_null"
+    }
+  ],
+  "rationale": "RSI reversion on a faster mean-reverting series"
+}

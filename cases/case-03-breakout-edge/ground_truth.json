@@ -1,0 +1,9 @@
+{
+  "verdict": "edge",
+  "findings": [
+    {
+      "id": "robust_oos"
+    }
+  ],
+  "rationale": "Donchian breakout on a persistently trending market"
+}

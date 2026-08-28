@@ -1,45 +1,69 @@
-"""Scoring — domain-agnostic default, swap in a domain scorer once locked.
+"""Scoring for the Strategy Validation Agent.
 
-A prediction and a ground_truth are both dicts. The default scorer handles the
-two shapes the appendix examples use:
-
-  - a single categorical `verdict`  -> exact-match accuracy
-  - a list of `findings` (by `id`)  -> precision / recall / F1
-
-`score()` returns a flat dict of numbers; the harness aggregates the means.
+Primary metric: verdict accuracy (predicted vs known label).
+Secondary:      findings precision / recall / F1 over the allowed finding ids.
 """
 
 from __future__ import annotations
 
 from typing import Any
 
+PRIMARY_METRIC = "verdict_correct"
 
-def score(prediction: dict[str, Any], ground_truth: dict[str, Any]) -> dict[str, Any]:
-    out: dict[str, Any] = {}
+_VERDICT_SYNONYMS = {
+    "edge": "edge", "real": "edge", "genuine": "edge", "has edge": "edge", "real edge": "edge",
+    "valid": "edge", "robust": "edge",
+    "overfit": "overfit", "overfitting": "overfit", "over-fit": "overfit", "curve-fit": "overfit",
+    "curvefit": "overfit", "curve fit": "overfit", "data-mined": "overfit", "data mined": "overfit",
+    "lookahead": "overfit", "look-ahead": "overfit",
+    "no_edge": "no_edge", "no edge": "no_edge", "none": "no_edge", "no-edge": "no_edge",
+    "random": "no_edge", "luck": "no_edge", "lucky": "no_edge", "spurious": "no_edge",
+    "not tradable": "no_edge", "no real edge": "no_edge",
+}
 
-    if "verdict" in ground_truth:
-        pred_v = str(prediction.get("verdict", "")).strip().lower()
-        true_v = str(ground_truth["verdict"]).strip().lower()
-        out["verdict_correct"] = 1.0 if pred_v == true_v else 0.0
-        out["pred_verdict"] = pred_v or "(none)"
-        out["true_verdict"] = true_v
+_ALLOWED_FINDINGS = {
+    "oos_collapse", "param_fragility", "lookahead_bias", "regime_dependence",
+    "transaction_cost_sensitivity", "insufficient_trades", "robust_oos", "significant_vs_null",
+}
 
-    if "findings" in ground_truth:
-        pred_ids = {str(f.get("id", f)) for f in prediction.get("findings", [])}
-        true_ids = {str(f.get("id", f)) for f in ground_truth["findings"]}
-        tp = len(pred_ids & true_ids)
-        fp = len(pred_ids - true_ids)
-        fn = len(true_ids - pred_ids)
-        prec = tp / (tp + fp) if (tp + fp) else 0.0
-        rec = tp / (tp + fn) if (tp + fn) else 0.0
-        f1 = 2 * prec * rec / (prec + rec) if (prec + rec) else 0.0
-        out.update({"precision": prec, "recall": rec, "f1": f1,
-                    "true_positives": tp, "false_positives": fp, "false_negatives": fn})
 
-    if not out:
-        out["exact_match"] = 1.0 if prediction == ground_truth else 0.0
+def _norm_verdict(v: Any) -> str:
+    s = str(v or "").strip().lower()
+    if s in _VERDICT_SYNONYMS:
+        return _VERDICT_SYNONYMS[s]
+    for key, val in _VERDICT_SYNONYMS.items():
+        if key in s:
+            return val
+    return s or "(none)"
 
+
+def _finding_ids(obj: Any) -> set[str]:
+    out = set()
+    for f in obj.get("findings", []) or []:
+        fid = f.get("id") if isinstance(f, dict) else f
+        fid = str(fid or "").strip().lower()
+        if fid in _ALLOWED_FINDINGS:
+            out.add(fid)
     return out
 
 
-PRIMARY_METRIC = "verdict_correct"   # what the headline table reports; set per domain
+def score(prediction: dict[str, Any], ground_truth: dict[str, Any]) -> dict[str, Any]:
+    pred_v = _norm_verdict(prediction.get("verdict"))
+    true_v = _norm_verdict(ground_truth.get("verdict"))
+    out: dict[str, Any] = {
+        "verdict_correct": 1.0 if pred_v == true_v else 0.0,
+        "pred_verdict": pred_v,
+        "true_verdict": true_v,
+    }
+
+    pred_f, true_f = _finding_ids(prediction), _finding_ids(ground_truth)
+    if true_f or pred_f:
+        tp = len(pred_f & true_f)
+        fp = len(pred_f - true_f)
+        fn = len(true_f - pred_f)
+        prec = tp / (tp + fp) if (tp + fp) else (1.0 if not true_f else 0.0)
+        rec = tp / (tp + fn) if (tp + fn) else 1.0
+        f1 = 2 * prec * rec / (prec + rec) if (prec + rec) else 0.0
+        out.update({"precision": round(prec, 3), "recall": round(rec, 3), "f1": round(f1, 3),
+                    "findings_tp": tp, "findings_fp": fp, "findings_fn": fn})
+    return out

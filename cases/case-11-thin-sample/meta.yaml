@@ -1,0 +1,5 @@
+id: case-11-thin-sample
+title: Real edge, but only a handful of trades to judge it on
+seed: 1451
+human_minutes_baseline: 30
+human_minutes_advanced: 5

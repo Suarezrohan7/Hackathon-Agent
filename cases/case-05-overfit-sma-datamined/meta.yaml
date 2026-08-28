@@ -1,0 +1,5 @@
+id: case-05-overfit-sma-datamined
+title: SMA-cross windows tuned to a single history
+seed: 1206
+human_minutes_baseline: 30
+human_minutes_advanced: 5

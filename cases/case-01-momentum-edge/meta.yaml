@@ -1,0 +1,5 @@
+id: case-01-momentum-edge
+title: Time-series momentum on a series with real return autocorrelation
+seed: 1007
+human_minutes_baseline: 30
+human_minutes_advanced: 5

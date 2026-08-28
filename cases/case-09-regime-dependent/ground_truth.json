@@ -1,0 +1,9 @@
+{
+  "verdict": "edge",
+  "findings": [
+    {
+      "id": "regime_dependence"
+    }
+  ],
+  "rationale": "Trend-following that works only while the trend lasts"
+}

@@ -1,0 +1,5 @@
+id: case-07-no-edge-random
+title: Breakout strategy on a pure random walk
+seed: 1305
+human_minutes_baseline: 30
+human_minutes_advanced: 5

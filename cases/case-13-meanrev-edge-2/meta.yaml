@@ -1,0 +1,5 @@
+id: case-13-meanrev-edge-2
+title: RSI reversion on a faster mean-reverting series
+seed: 1118
+human_minutes_baseline: 30
+human_minutes_advanced: 5
