@@ -1,0 +1,1224 @@
+{
+  "rows": [
+    {
+      "case": "case-01-momentum-edge",
+      "title": "Time-series momentum on a series with real return autocorrelation",
+      "which": "baseline",
+      "elapsed_s": 11.48,
+      "human_minutes": 30,
+      "prediction": {
+        "verdict": "overfit",
+        "rationale": "The report only presents in-sample performance despite an out-of-sample dataset (data_oos.csv) being available and a parameter grid being defined. No OOS results, walk-forward, or parameter-sensitivity analysis are shown, so the attractive Sharpe (1.21) and CAGR (21%) cannot be verified outside the fitted window. A single momentum lookback (20) was chosen from a 5-value grid without evidence it isn't just the best-in-sample pick, and with only 77 trades over the sample the estimates are noisy. Without OOS confirmation this looks like a curve-fit result rather than a validated edge.",
+        "findings": [
+          {
+            "id": "oos_collapse"
+          },
+          {
+            "id": "param_fragility"
+          },
+          {
+            "id": "insufficient_trades"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "edge",
+        "findings": [
+          {
+            "id": "robust_oos"
+          }
+        ],
+        "rationale": "Time-series momentum on a series with real return autocorrelation"
+      },
+      "score": {
+        "verdict_correct": 0.0,
+        "pred_verdict": "overfit",
+        "true_verdict": "edge",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "findings_tp": 0,
+        "findings_fp": 3,
+        "findings_fn": 1
+      },
+      "error": null
+    },
+    {
+      "case": "case-02-meanrev-edge",
+      "title": "RSI reversion on a mean-reverting (Ornstein-Uhlenbeck) series",
+      "which": "baseline",
+      "elapsed_s": 10.82,
+      "human_minutes": 30,
+      "prediction": {
+        "verdict": "overfit",
+        "rationale": "The report only shows in-sample performance despite referencing an OOS data file; no out-of-sample results are provided, so the strategy's edge is unverified outside the fitting window. The presence of a parameter grid search (period, low, high) with no reported sensitivity or OOS confirmation suggests the reported Sharpe (0.92) and win rate may be a product of parameter tuning on a single dataset. With only 62 trades, the sample size is too small to draw statistically robust conclusions, and no transaction cost or slippage analysis is included, further inflating apparent profitability. Without OOS validation and parameter robustness checks, this looks like a curve-fit result rather than a demonstrated edge.",
+        "findings": [
+          {
+            "id": "oos_collapse"
+          },
+          {
+            "id": "param_fragility"
+          },
+          {
+            "id": "insufficient_trades"
+          },
+          {
+            "id": "transaction_cost_sensitivity"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "edge",
+        "findings": [
+          {
+            "id": "robust_oos"
+          }
+        ],
+        "rationale": "RSI reversion on a mean-reverting (Ornstein-Uhlenbeck) series"
+      },
+      "score": {
+        "verdict_correct": 0.0,
+        "pred_verdict": "overfit",
+        "true_verdict": "edge",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "findings_tp": 0,
+        "findings_fp": 4,
+        "findings_fn": 1
+      },
+      "error": null
+    },
+    {
+      "case": "case-03-breakout-edge",
+      "title": "Time-series momentum on a persistently trending market (low turnover, survives costs)",
+      "which": "baseline",
+      "elapsed_s": 10.68,
+      "human_minutes": 30,
+      "prediction": {
+        "verdict": "overfit",
+        "rationale": "The report only shows in-sample metrics despite an out-of-sample dataset (data_oos.csv) being referenced \u2013 no OOS performance is given, which is a major red flag suggesting the strategy failed or was never properly validated out-of-sample. The parameter was chosen via a grid search (lookback \u2208 {20,30,40,60}) and the selected value (40) sits in the middle of a small grid, indicating potential curve-fitting to the in-sample data. Additional warning signs include a very low win rate (28.6%) offset only by a few large winning trades, a modest Sharpe (0.77) that is not compelling given a severe max drawdown (-39%), and a limited number of trades (56) which reduces statistical confidence. Together these factors point to an overfit strategy rather than a demonstrated robust edge.",
+        "findings": [
+          {
+            "id": "param_fragility"
+          },
+          {
+            "id": "oos_collapse"
+          },
+          {
+            "id": "insufficient_trades"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "edge",
+        "findings": [
+          {
+            "id": "robust_oos"
+          }
+        ],
+        "rationale": "Time-series momentum on a persistently trending market (low turnover, survives costs)"
+      },
+      "score": {
+        "verdict_correct": 0.0,
+        "pred_verdict": "overfit",
+        "true_verdict": "edge",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "findings_tp": 0,
+        "findings_fp": 3,
+        "findings_fn": 1
+      },
+      "error": null
+    },
+    {
+      "case": "case-04-overfit-kitchensink",
+      "title": "5-parameter strategy grid-searched to fit one random history",
+      "which": "baseline",
+      "elapsed_s": 13.26,
+      "human_minutes": 30,
+      "prediction": {
+        "verdict": "overfit",
+        "rationale": "The strategy exposes 5 tunable parameters searched over a 432-combination grid, and the report only presents in-sample metrics (Sharpe 1.79, 108 trades) despite an out-of-sample dataset (data_oos.csv) being explicitly available in the config. No OOS results are reported at all, which is a strong signal that OOS performance was either not evaluated properly or was omitted because it did not hold up. With only 108 trades and a 5-parameter grid search, the in-sample Sharpe is highly susceptible to overfitting/curve-fitting to noise, and the lack of any OOS confirmation, walk-forward analysis, or transaction cost sensitivity check means the edge cannot be trusted as real. This combination of heavy parameter search + suppressed/absent OOS validation is a classic overfitting red flag.",
+        "findings": [
+          {
+            "id": "param_fragility"
+          },
+          {
+            "id": "oos_collapse"
+          },
+          {
+            "id": "insufficient_trades"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "overfit",
+        "findings": [
+          {
+            "id": "oos_collapse"
+          },
+          {
+            "id": "param_fragility"
+          }
+        ],
+        "rationale": "5-parameter strategy grid-searched to fit one random history"
+      },
+      "score": {
+        "verdict_correct": 1.0,
+        "pred_verdict": "overfit",
+        "true_verdict": "overfit",
+        "precision": 0.667,
+        "recall": 1.0,
+        "f1": 0.8,
+        "findings_tp": 2,
+        "findings_fp": 1,
+        "findings_fn": 0
+      },
+      "error": null
+    },
+    {
+      "case": "case-05-overfit-sma-datamined",
+      "title": "SMA-cross windows tuned to a single history",
+      "which": "baseline",
+      "elapsed_s": 8.41,
+      "human_minutes": 30,
+      "prediction": {
+        "verdict": "overfit",
+        "rationale": "The in-sample report shows only 6 trades over the test period, far too few to draw statistically meaningful conclusions about edge, and the Sharpe/CAGR figures are highly sensitive to this tiny sample. The strategy also selects parameters (fast=8, slow=70) from a large 56-combination grid, a classic setup for curve-fitting to a specific price series. Despite an OOS data file being referenced, no out-of-sample results are reported, so there's no evidence the strategy generalizes beyond the in-sample window. Combined with the small trade count and the wide parameter grid search, this strongly suggests the reported performance is an artifact of overfitting rather than a genuine, robust edge.",
+        "findings": [
+          {
+            "id": "insufficient_trades"
+          },
+          {
+            "id": "param_fragility"
+          },
+          {
+            "id": "oos_collapse"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "overfit",
+        "findings": [
+          {
+            "id": "oos_collapse"
+          },
+          {
+            "id": "param_fragility"
+          }
+        ],
+        "rationale": "SMA-cross windows tuned to a single history"
+      },
+      "score": {
+        "verdict_correct": 1.0,
+        "pred_verdict": "overfit",
+        "true_verdict": "overfit",
+        "precision": 0.667,
+        "recall": 1.0,
+        "f1": 0.8,
+        "findings_tp": 2,
+        "findings_fp": 1,
+        "findings_fn": 0
+      },
+      "error": null
+    },
+    {
+      "case": "case-06-lookahead-bug",
+      "title": "Strategy reads the next bar's close; leakage shows in the lag sweep and implausible stats, not an OOS collapse",
+      "which": "baseline",
+      "elapsed_s": 4.39,
+      "human_minutes": 30,
+      "prediction": {
+        "verdict": "overfit",
+        "rationale": "The signal function explicitly uses df['close'].shift(-k), which pulls future price data into the current bar's signal - a textbook look-ahead bias. This mechanically produces impossible results: Sharpe of 21.9, 100% win rate, and zero max drawdown are not achievable by any real trading strategy, since they imply perfect foreknowledge of price direction. There is no out-of-sample validation reported despite an oos_data_file being referenced, and the perfect win rate confirms the backtest is simply measuring the leak rather than any genuine predictive signal. This strategy would collapse entirely if run live or on unseen data with proper causal signal construction.",
+        "findings": [
+          {
+            "id": "lookahead_bias"
+          },
+          {
+            "id": "oos_collapse"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "overfit",
+        "findings": [
+          {
+            "id": "lookahead_bias"
+          }
+        ],
+        "rationale": "Strategy reads the next bar's close; leakage shows in the lag sweep and implausible stats, not an OOS collapse"
+      },
+      "score": {
+        "verdict_correct": 1.0,
+        "pred_verdict": "overfit",
+        "true_verdict": "overfit",
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "findings_tp": 1,
+        "findings_fp": 1,
+        "findings_fn": 0
+      },
+      "error": null
+    },
+    {
+      "case": "case-07-no-edge-random",
+      "title": "Breakout strategy on a pure random walk",
+      "which": "baseline",
+      "elapsed_s": 6.89,
+      "human_minutes": 30,
+      "prediction": {
+        "verdict": "no_edge",
+        "rationale": "The in-sample Sharpe of 0.30 is weak, the max drawdown (-31%) dwarfs the total return (14.6%), and the strategy only produced 29 trades over the sample \u2014 far too few to draw statistically meaningful conclusions. No out-of-sample results are reported despite an oos_data_file being referenced, and no parameter-sensitivity results across the given grid are shown, so we can't confirm robustness across lookbacks or regimes. Combined, this looks like a marginal, noisy in-sample result rather than a validated edge.",
+        "findings": [
+          {
+            "id": "insufficient_trades"
+          },
+          {
+            "id": "oos_collapse"
+          },
+          {
+            "id": "regime_dependence"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "no_edge",
+        "findings": [],
+        "rationale": "Breakout strategy on a pure random walk"
+      },
+      "score": {
+        "verdict_correct": 1.0,
+        "pred_verdict": "no_edge",
+        "true_verdict": "no_edge",
+        "precision": 0.0,
+        "recall": 1.0,
+        "f1": 0.0,
+        "findings_tp": 0,
+        "findings_fp": 3,
+        "findings_fn": 0
+      },
+      "error": null
+    },
+    {
+      "case": "case-08-no-edge-lucky",
+      "title": "Untuned strategy that happened to look great on one history",
+      "which": "baseline",
+      "elapsed_s": 3.52,
+      "human_minutes": 30,
+      "prediction": {
+        "verdict": "overfit",
+        "rationale": "The report only provides in-sample metrics; no out-of-sample validation is shown despite an oos_data_file being referenced, so we cannot confirm the edge survives on unseen data. The 3x2x2 parameter grid around a simple RSI mean-reversion rule invites curve-fitting to the sample, and n_trades=66 is a small sample for a Sharpe/win-rate estimate, making the in-sample results fragile and likely inflated. Without OOS Sharpe, cost sensitivity analysis, or regime breakdown, the edge cannot be considered validated.",
+        "findings": [
+          {
+            "id": "oos_collapse"
+          },
+          {
+            "id": "param_fragility"
+          },
+          {
+            "id": "insufficient_trades"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "no_edge",
+        "findings": [
+          {
+            "id": "oos_collapse"
+          }
+        ],
+        "rationale": "Untuned strategy that happened to look great on one history"
+      },
+      "score": {
+        "verdict_correct": 0.0,
+        "pred_verdict": "overfit",
+        "true_verdict": "no_edge",
+        "precision": 0.333,
+        "recall": 1.0,
+        "f1": 0.5,
+        "findings_tp": 1,
+        "findings_fp": 2,
+        "findings_fn": 0
+      },
+      "error": null
+    },
+    {
+      "case": "case-09-regime-dependent",
+      "title": "Trend-following that worked while the trend lasted, then didn't - regime-dependent, not a durable edge",
+      "which": "baseline",
+      "elapsed_s": 10.78,
+      "human_minutes": 30,
+      "prediction": {
+        "verdict": "overfit",
+        "rationale": "Only in-sample metrics are reported even though an out-of-sample data file (data_oos.csv) exists, meaning the strategy's performance has not been validated outside the fitting period. The parameter grid (10/20/40) shows the lookback was tuned, and no sensitivity analysis or OOS Sharpe is provided to confirm the choice of 20 is robust. With only 81 trades and a low 27% win rate, the strategy's edge relies on a few large winners, making it fragile to regime shifts and parameter choice. Absent OOS confirmation, the reported in-sample Sharpe (0.90) is likely inflated by curve-fitting.",
+        "findings": [
+          {
+            "id": "oos_collapse"
+          },
+          {
+            "id": "param_fragility"
+          },
+          {
+            "id": "insufficient_trades"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "no_edge",
+        "findings": [
+          {
+            "id": "regime_dependence"
+          }
+        ],
+        "rationale": "Trend-following that worked while the trend lasted, then didn't - regime-dependent, not a durable edge"
+      },
+      "score": {
+        "verdict_correct": 0.0,
+        "pred_verdict": "overfit",
+        "true_verdict": "no_edge",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "findings_tp": 0,
+        "findings_fp": 3,
+        "findings_fn": 1
+      },
+      "error": null
+    },
+    {
+      "case": "case-10-cost-killed",
+      "title": "Small gross edge that transaction costs erase",
+      "which": "baseline",
+      "elapsed_s": 13.13,
+      "human_minutes": 30,
+      "prediction": {
+        "verdict": "overfit",
+        "rationale": "The chosen parameters (period=3, low=48, high=52) sit right on top of the neutral RSI value of 50, meaning the 'signal' is essentially reacting to tiny, noisy fluctuations rather than any meaningful momentum/mean-reversion regime. This produces very frequent trading (318 trades, 84% exposure) for a mediocre in-sample Sharpe of 0.49, consistent with fitting noise rather than a genuine edge. The param grid is narrow and centered on these same near-50 thresholds, suggesting the 'optimal' combo was cherry-picked from a small search space rather than validated. Critically, an out-of-sample dataset (data_oos.csv) is referenced in the report but no OOS performance is shown at all \u2014 only in-sample metrics are presented, so there is no evidence the edge survives outside the fitted window. Given the high sensitivity of the signal to threshold placement near 50 and the missing OOS validation, this looks like an overfit strategy rather than a robust edge.",
+        "findings": [
+          {
+            "id": "param_fragility"
+          },
+          {
+            "id": "oos_collapse"
+          },
+          {
+            "id": "transaction_cost_sensitivity"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "no_edge",
+        "findings": [
+          {
+            "id": "transaction_cost_sensitivity"
+          }
+        ],
+        "rationale": "Small gross edge that transaction costs erase"
+      },
+      "score": {
+        "verdict_correct": 0.0,
+        "pred_verdict": "overfit",
+        "true_verdict": "no_edge",
+        "precision": 0.333,
+        "recall": 1.0,
+        "f1": 0.5,
+        "findings_tp": 1,
+        "findings_fp": 2,
+        "findings_fn": 0
+      },
+      "error": null
+    },
+    {
+      "case": "case-11-thin-sample",
+      "title": "Real edge, but only a handful of trades to judge it on",
+      "which": "baseline",
+      "elapsed_s": 10.82,
+      "human_minutes": 30,
+      "prediction": {
+        "verdict": "overfit",
+        "rationale": "The strategy shows an extremely low trade count (n_trades=5) over the in-sample period, making the Sharpe ratio and win rate statistically meaningless \u2014 a handful of trades cannot establish a reliable edge. There is no out-of-sample test reported despite an oos_data_file being referenced, so we cannot confirm the pattern holds outside the fitted window. Additionally, only 3 lookback values were tested and the chosen 35 sits in the middle, but with so few trades any of these could look good by chance (param fragility risk untested with real robustness checks). No transaction cost analysis is shown, and win_rate of 0.4 with positive Sharpe implies reliance on a couple of large winning trades, typical of overfit breakout parameter selection on limited data.",
+        "findings": [
+          {
+            "id": "insufficient_trades"
+          },
+          {
+            "id": "oos_collapse"
+          },
+          {
+            "id": "param_fragility"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "edge",
+        "findings": [
+          {
+            "id": "insufficient_trades"
+          },
+          {
+            "id": "robust_oos"
+          }
+        ],
+        "rationale": "Real edge, but only a handful of trades to judge it on"
+      },
+      "score": {
+        "verdict_correct": 0.0,
+        "pred_verdict": "overfit",
+        "true_verdict": "edge",
+        "precision": 0.333,
+        "recall": 0.5,
+        "f1": 0.4,
+        "findings_tp": 1,
+        "findings_fp": 2,
+        "findings_fn": 1
+      },
+      "error": null
+    },
+    {
+      "case": "case-12-overfit-kitchensink-2",
+      "title": "Another 5-parameter fit on a different random history",
+      "which": "baseline",
+      "elapsed_s": 4.35,
+      "human_minutes": 30,
+      "prediction": {
+        "verdict": "overfit",
+        "rationale": "Only in-sample results are provided; no out-of-sample validation was actually reported despite an oos_data_file being referenced, so performance could easily be a product of curve-fitting across a fairly large 5-parameter grid (3x4x3x3x3=324 combinations). The chosen params (d=50) sit at the edge of the tested grid, a classic sign of overfitting to noise. With no OOS Sharpe/drawdown figures, no transaction cost sensitivity, and no regime breakdown given, there's no evidence the edge survives outside the fitted window. Trade count (111) is also modest for a multi-signal blended strategy, raising statistical significance concerns.",
+        "findings": [
+          {
+            "id": "param_fragility"
+          },
+          {
+            "id": "oos_collapse"
+          },
+          {
+            "id": "insufficient_trades"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "overfit",
+        "findings": [
+          {
+            "id": "oos_collapse"
+          },
+          {
+            "id": "param_fragility"
+          }
+        ],
+        "rationale": "Another 5-parameter fit on a different random history"
+      },
+      "score": {
+        "verdict_correct": 1.0,
+        "pred_verdict": "overfit",
+        "true_verdict": "overfit",
+        "precision": 0.667,
+        "recall": 1.0,
+        "f1": 0.8,
+        "findings_tp": 2,
+        "findings_fp": 1,
+        "findings_fn": 0
+      },
+      "error": null
+    },
+    {
+      "case": "case-13-meanrev-edge-2",
+      "title": "RSI reversion on a faster mean-reverting series",
+      "which": "baseline",
+      "elapsed_s": 9.97,
+      "human_minutes": 30,
+      "prediction": {
+        "verdict": "overfit",
+        "rationale": "The report only presents in-sample results despite an out-of-sample dataset (data_oos.csv) being available and referenced in the config, meaning the strategy's robustness was never actually validated. This is a classic RSI mean-reversion setup tuned over a 36-combination grid (period x low x high), which combined with an in-sample Sharpe of 1.92 and unusually high 75% win rate is a strong signature of parameter overfitting to historical noise. The trade count (88) over what is likely a multi-year sample also implies fairly infrequent signals, adding uncertainty to the statistical significance of the win rate and Sharpe. Without seeing OOS metrics, cost-sensitivity analysis, or performance across different regimes, there is no evidence the edge generalizes; the absence of OOS reporting despite its availability is itself a red flag suggesting the OOS results were poor or omitted.",
+        "findings": [
+          {
+            "id": "oos_collapse"
+          },
+          {
+            "id": "param_fragility"
+          },
+          {
+            "id": "insufficient_trades"
+          },
+          {
+            "id": "transaction_cost_sensitivity"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "edge",
+        "findings": [
+          {
+            "id": "robust_oos"
+          }
+        ],
+        "rationale": "RSI reversion on a faster mean-reverting series"
+      },
+      "score": {
+        "verdict_correct": 0.0,
+        "pred_verdict": "overfit",
+        "true_verdict": "edge",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "findings_tp": 0,
+        "findings_fp": 4,
+        "findings_fn": 1
+      },
+      "error": null
+    },
+    {
+      "case": "case-01-momentum-edge",
+      "title": "Time-series momentum on a series with real return autocorrelation",
+      "which": "advanced",
+      "elapsed_s": 22.12,
+      "human_minutes": 5,
+      "prediction": {
+        "verdict": "edge",
+        "rationale": "OOS Sharpe of 0.50 (vs 1.21 in-sample, oos_over_is=0.414) still clears the bar net of 5bps costs, but walk-forward folds range from 1.31 down to -0.15 with regime_like=true, and param_plateau_score=0.593 with fragile=true, indicating the edge is regime-dependent and sensitive to parameter choice rather than robust.",
+        "findings": [
+          {
+            "id": "oos_collapse",
+            "evidence": "oos_test: oos_over_is = 0.414 (is_sharpe 1.2095 -> oos_sharpe 0.5003)"
+          },
+          {
+            "id": "param_fragility",
+            "evidence": "param_sensitivity: plateau_score = 0.593, fragile=true, no lookahead flag (lookahead_probe.suspected=false)"
+          },
+          {
+            "id": "regime_dependence",
+            "evidence": "walk_forward: fold_sharpes_fixed = [1.31, 1.05, 0.37, 0.91, -0.15], regime_like=true"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "edge",
+        "findings": [
+          {
+            "id": "robust_oos"
+          }
+        ],
+        "rationale": "Time-series momentum on a series with real return autocorrelation"
+      },
+      "score": {
+        "verdict_correct": 1.0,
+        "pred_verdict": "edge",
+        "true_verdict": "edge",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "findings_tp": 0,
+        "findings_fp": 3,
+        "findings_fn": 1
+      },
+      "error": null
+    },
+    {
+      "case": "case-02-meanrev-edge",
+      "title": "RSI reversion on a mean-reverting (Ornstein-Uhlenbeck) series",
+      "which": "advanced",
+      "elapsed_s": 27.85,
+      "human_minutes": 5,
+      "prediction": {
+        "verdict": "edge",
+        "rationale": "The strategy clears the OOS bar with oos_sharpe 0.98 (>=0.45) and oos_over_is 1.065 (>=0.6), and it holds up under 5bps cost stress and shows no lookahead flags, supporting an EDGE call. Parameter plateau score of 0.921 and non-fragile flag add some confidence in robustness.",
+        "findings": [
+          {
+            "id": "regime_dependence",
+            "evidence": "walk_forward fold_sharpes_fixed swing from 2.26, 2.00 down to 0.19, 0.30, and refit fold sharpes include -0.40 alongside 2.18 \u2014 strongly positive to near-zero/negative across folds despite regime_like flag being false"
+          },
+          {
+            "id": "robust_oos",
+            "evidence": "oos_test: oos_sharpe=0.9799 (>=0.45) and oos_over_is=1.065 (>=0.6), oos_max_drawdown=-0.1153, oos_total_return=0.3091"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "edge",
+        "findings": [
+          {
+            "id": "robust_oos"
+          }
+        ],
+        "rationale": "RSI reversion on a mean-reverting (Ornstein-Uhlenbeck) series"
+      },
+      "score": {
+        "verdict_correct": 1.0,
+        "pred_verdict": "edge",
+        "true_verdict": "edge",
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "findings_tp": 1,
+        "findings_fp": 1,
+        "findings_fn": 0
+      },
+      "error": null
+    },
+    {
+      "case": "case-03-breakout-edge",
+      "title": "Time-series momentum on a persistently trending market (low turnover, survives costs)",
+      "which": "advanced",
+      "elapsed_s": 24.6,
+      "human_minutes": 5,
+      "prediction": {
+        "verdict": "edge",
+        "rationale": "The verdict rests on oos_sharpe=1.2558 clearing the 0.45 bar and oos_over_is=1.629 showing OOS outperforming IS, with costs surviving at 5bps and parameters not flagged fragile (param_fragile=false). However, the walk-forward fold Sharpes [0.03, 0.28, 3.05, -0.07, 0.17] show the entire edge is concentrated in one fold, and only 56 trades back the result, so capital risk should be sized accordingly.",
+        "findings": [
+          {
+            "id": "regime_dependence",
+            "evidence": "walk_forward fold_sharpes_fixed: [0.03, 0.28, 3.05, -0.07, 0.17] \u2014 swings from 3.05 (strongly positive) to -0.07 (negative) across folds"
+          },
+          {
+            "id": "robust_oos",
+            "evidence": "oos_test: oos_sharpe=1.2558 (>=0.45) and oos_over_is=1.629 (>=0.6)"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "edge",
+        "findings": [
+          {
+            "id": "robust_oos"
+          }
+        ],
+        "rationale": "Time-series momentum on a persistently trending market (low turnover, survives costs)"
+      },
+      "score": {
+        "verdict_correct": 1.0,
+        "pred_verdict": "edge",
+        "true_verdict": "edge",
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "findings_tp": 1,
+        "findings_fp": 1,
+        "findings_fn": 0
+      },
+      "error": null
+    },
+    {
+      "case": "case-04-overfit-kitchensink",
+      "title": "5-parameter strategy grid-searched to fit one random history",
+      "which": "advanced",
+      "elapsed_s": 73.03,
+      "human_minutes": 5,
+      "prediction": {
+        "verdict": "overfit",
+        "rationale": "The in-sample Sharpe of 1.79 completely inverts out of sample to -0.5765 (ratio -0.322), and the walk-forward folds swing wildly (2.31, 0.99, -0.49, 0.24, -1.7), showing the edge is not stable across time regimes. Combined with a fragile parameter surface (plateau score 0.57, flagged fragile) and a Monte Carlo permutation p-value of 0.0547 that fails to clear significance, the evidence points to a spurious, regime-specific fit rather than a durable edge, despite passing cost stress and having a reasonable 108-trade sample.",
+        "findings": [
+          {
+            "id": "oos_collapse",
+            "evidence": "implied by the evidence rule"
+          },
+          {
+            "id": "param_fragility",
+            "evidence": "implied by the evidence rule"
+          },
+          {
+            "id": "regime_dependence",
+            "evidence": "implied by the evidence rule"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "overfit",
+        "findings": [
+          {
+            "id": "oos_collapse"
+          },
+          {
+            "id": "param_fragility"
+          }
+        ],
+        "rationale": "5-parameter strategy grid-searched to fit one random history"
+      },
+      "score": {
+        "verdict_correct": 1.0,
+        "pred_verdict": "overfit",
+        "true_verdict": "overfit",
+        "precision": 0.667,
+        "recall": 1.0,
+        "f1": 0.8,
+        "findings_tp": 2,
+        "findings_fp": 1,
+        "findings_fn": 0
+      },
+      "error": null
+    },
+    {
+      "case": "case-05-overfit-sma-datamined",
+      "title": "SMA-cross windows tuned to a single history",
+      "which": "advanced",
+      "elapsed_s": 37.62,
+      "human_minutes": 5,
+      "prediction": {
+        "verdict": "overfit",
+        "rationale": "The strategy's edge evaporates out of sample: IS Sharpe 1.24 flips to OOS Sharpe -1.37 (oos_over_is=-1.113, well below the 0.4 threshold), and walk-forward testing shows a similar decay pattern (fold Sharpes 0.87, 1.18, then -0.77, -2.54, -2.77; mean -0.805), indicating the fit doesn't generalize across regimes. Parameter sensitivity confirms this is a fragile spike rather than a robust edge (plateau_score=0.572, fragile=true), so risking capital on these parameters is unjustified.",
+        "findings": [
+          {
+            "id": "insufficient_trades",
+            "evidence": "trade_count: n_trades=6, adequate=false"
+          },
+          {
+            "id": "oos_collapse",
+            "evidence": "oos_test: is_sharpe=1.2355, oos_sharpe=-1.3747, oos_over_is=-1.113 (<0.4), oos_max_drawdown=-0.3869"
+          },
+          {
+            "id": "param_fragility",
+            "evidence": "param_sensitivity: plateau_score=0.572 (<0.6), fragile=true, lookahead_probe.suspected=false"
+          },
+          {
+            "id": "regime_dependence",
+            "evidence": "walk_forward: fold_sharpes_fixed=[0.87,1.18,-0.77,-2.54,-2.77], regime_like=true, wf_sharpe_fixed_mean=-0.805"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "overfit",
+        "findings": [
+          {
+            "id": "oos_collapse"
+          },
+          {
+            "id": "param_fragility"
+          }
+        ],
+        "rationale": "SMA-cross windows tuned to a single history"
+      },
+      "score": {
+        "verdict_correct": 1.0,
+        "pred_verdict": "overfit",
+        "true_verdict": "overfit",
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "findings_tp": 2,
+        "findings_fp": 2,
+        "findings_fn": 0
+      },
+      "error": null
+    },
+    {
+      "case": "case-06-lookahead-bug",
+      "title": "Strategy reads the next bar's close; leakage shows in the lag sweep and implausible stats, not an OOS collapse",
+      "which": "advanced",
+      "elapsed_s": 70.06,
+      "human_minutes": 5,
+      "prediction": {
+        "verdict": "overfit",
+        "rationale": "The lag-sweep collapse (Sharpe 21.902 at lag1 -> 1.523 at lag2 -> 0.696 at lag3, with a suspicious win_rate_lag1=1.0) alongside a detected static 'shift(-' flag is a textbook look-ahead signature, meaning the reported edge only exists when the future reference is present. This also explains why the 'robust' OOS numbers (oos_sharpe=21.1023, oos_over_is=0.963) look implausibly strong and mirror the leaked in-sample result rather than confirming genuine robustness; combined with a non-significant mc_p_value=0.4328 and param_fragile=true, capital should not be risked on this strategy as-is.",
+        "findings": [
+          {
+            "id": "lookahead_bias",
+            "evidence": "lookahead_probe.suspected=true; static flag 'shift(-' detected; sharpe_lag1=21.902 vs sharpe_lag2=1.523, sharpe_lag3=0.696; win_rate_lag1=1.0"
+          },
+          {
+            "id": "robust_oos",
+            "evidence": "oos_test oos_sharpe=21.1023 (>=0.45) and oos_over_is=0.963 (>=0.6)"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "overfit",
+        "findings": [
+          {
+            "id": "lookahead_bias"
+          }
+        ],
+        "rationale": "Strategy reads the next bar's close; leakage shows in the lag sweep and implausible stats, not an OOS collapse"
+      },
+      "score": {
+        "verdict_correct": 1.0,
+        "pred_verdict": "overfit",
+        "true_verdict": "overfit",
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "findings_tp": 1,
+        "findings_fp": 1,
+        "findings_fn": 0
+      },
+      "error": null
+    },
+    {
+      "case": "case-07-no-edge-random",
+      "title": "Breakout strategy on a pure random walk",
+      "which": "advanced",
+      "elapsed_s": 33.26,
+      "human_minutes": 5,
+      "prediction": {
+        "verdict": "no_edge",
+        "rationale": "The strategy fails the out-of-sample test outright: oos_sharpe of 0.15 is only 51% of the in-sample 0.30 (oos_over_is=0.511), the Monte Carlo permutation p-value of 0.189 is not significant, and walk-forward folds swing wildly (-0.47 to 1.33, mean 0.06) with regime_like=true, indicating the edge is not stable across time. Compounding this, param_plateau_score of 0.274 shows the result is fragile to parameter choice and n_trades=29 is too few to draw reliable conclusions, so there is no basis to risk capital on this strategy as configured.",
+        "findings": [
+          {
+            "id": "insufficient_trades",
+            "evidence": "trade_count: n_trades=29, adequate=false"
+          },
+          {
+            "id": "param_fragility",
+            "evidence": "param_sensitivity: plateau_score=0.274 (well below 0.6), median_sharpe=0.107 vs best_sharpe=0.295, neighbour_mean_sharpe=0.081, and lookahead_probe.suspected=false"
+          },
+          {
+            "id": "regime_dependence",
+            "evidence": "walk_forward: fold_sharpes_fixed=[-0.47, 0.39, 1.33, 0.07, -1.02], regime_like=true, wf_sharpe_fixed_mean=0.06"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "no_edge",
+        "findings": [],
+        "rationale": "Breakout strategy on a pure random walk"
+      },
+      "score": {
+        "verdict_correct": 1.0,
+        "pred_verdict": "no_edge",
+        "true_verdict": "no_edge",
+        "precision": 0.0,
+        "recall": 1.0,
+        "f1": 0.0,
+        "findings_tp": 0,
+        "findings_fp": 3,
+        "findings_fn": 0
+      },
+      "error": null
+    },
+    {
+      "case": "case-08-no-edge-lucky",
+      "title": "Untuned strategy that happened to look great on one history",
+      "which": "advanced",
+      "elapsed_s": 47.52,
+      "human_minutes": 5,
+      "prediction": {
+        "verdict": "no_edge",
+        "rationale": "The strategy's in-sample Sharpe of 0.72 evaporated out of sample to -0.06 (oos_over_is -0.086, far below the 0.4 threshold), and it lost -3.59% out of sample, indicating no real edge survived. Walk-forward folds are highly erratic (2.12, -0.06, -0.60, 0.48, -0.12, mean 0.365) with regime_like=true, and param_plateau_score 0.912 (fragile=false) confirms this isn't a fragile/overfit parameter set but rather noise or regime luck\u2014so risking capital on this is not advised despite passing cost and lookahead checks.",
+        "findings": [
+          {
+            "id": "oos_collapse",
+            "evidence": "oos_test: is_sharpe 0.7165 -> oos_sharpe -0.0618, oos_over_is -0.086 (<<0.4), oos_total_return -0.0359"
+          },
+          {
+            "id": "regime_dependence",
+            "evidence": "walk_forward: fold_sharpes_fixed [2.12, -0.06, -0.60, 0.48, -0.12], regime_like true, wf_sharpe_fixed_mean 0.365"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "no_edge",
+        "findings": [
+          {
+            "id": "oos_collapse"
+          }
+        ],
+        "rationale": "Untuned strategy that happened to look great on one history"
+      },
+      "score": {
+        "verdict_correct": 1.0,
+        "pred_verdict": "no_edge",
+        "true_verdict": "no_edge",
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "findings_tp": 1,
+        "findings_fp": 1,
+        "findings_fn": 0
+      },
+      "error": null
+    },
+    {
+      "case": "case-09-regime-dependent",
+      "title": "Trend-following that worked while the trend lasted, then didn't - regime-dependent, not a durable edge",
+      "which": "advanced",
+      "elapsed_s": 32.06,
+      "human_minutes": 5,
+      "prediction": {
+        "verdict": "no_edge",
+        "rationale": "In-sample Sharpe of 0.90 flipped to -0.58 out of sample (oos_over_is -0.642), and walk-forward folds swing wildly (1.67, -0.01, 0.44, -0.69, -1.30) with a near-zero mean (0.021), consistent with regime-dependence rather than a stable edge. Since param_fragile is false (plateau score 1.236), the failure isn't overfitting to fragile parameters \u2014 it looks like the in-sample performance was luck or a favorable regime that didn't persist, supporting NO_EDGE and arguing against risking capital here.",
+        "findings": [
+          {
+            "id": "oos_collapse",
+            "evidence": "oos_test: oos_over_is = -0.642 (is_sharpe 0.8996 -> oos_sharpe -0.5774), far below 0.4 threshold"
+          },
+          {
+            "id": "regime_dependence",
+            "evidence": "walk_forward fold_sharpes_fixed = [1.67, -0.01, 0.44, -0.69, -1.3], swinging from strongly positive to negative; regime_like: true"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "no_edge",
+        "findings": [
+          {
+            "id": "regime_dependence"
+          }
+        ],
+        "rationale": "Trend-following that worked while the trend lasted, then didn't - regime-dependent, not a durable edge"
+      },
+      "score": {
+        "verdict_correct": 1.0,
+        "pred_verdict": "no_edge",
+        "true_verdict": "no_edge",
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "findings_tp": 1,
+        "findings_fp": 1,
+        "findings_fn": 0
+      },
+      "error": null
+    },
+    {
+      "case": "case-10-cost-killed",
+      "title": "Small gross edge that transaction costs erase",
+      "which": "advanced",
+      "elapsed_s": 74.18,
+      "human_minutes": 5,
+      "prediction": {
+        "verdict": "no_edge",
+        "rationale": "The strategy's edge evaporates once realistic frictions are applied: gross Sharpe falls from 0.489 (0bps) to a near-zero 0.045 at 5bps and turns negative (-0.400) at 10bps, meaning the reported 1.07 OOS Sharpe is a pre-cost artifact that cannot support live risk-taking. The weak Monte Carlo permutation p-value (0.532) reinforces that the raw signal is not statistically distinguishable from noise once you account for the cost sensitivity, so capital should not be committed despite the seemingly strong oos_over_is ratio of 2.186.",
+        "findings": [
+          {
+            "id": "regime_dependence",
+            "evidence": "walk_forward refit fold sharpes swing from -0.6539 and -0.0478 to 1.3086 and 1.5752 across 5 folds"
+          },
+          {
+            "id": "robust_oos",
+            "evidence": "oos_test: oos_sharpe=1.0687 >= 0.45 and oos_over_is=2.186 >= 0.6"
+          },
+          {
+            "id": "transaction_cost_sensitivity",
+            "evidence": "cost_stress: survives_5bps=false, sharpe drops from 0.489 (0bps) to 0.045 (5bps) and -0.400 (10bps)"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "no_edge",
+        "findings": [
+          {
+            "id": "transaction_cost_sensitivity"
+          }
+        ],
+        "rationale": "Small gross edge that transaction costs erase"
+      },
+      "score": {
+        "verdict_correct": 1.0,
+        "pred_verdict": "no_edge",
+        "true_verdict": "no_edge",
+        "precision": 0.333,
+        "recall": 1.0,
+        "f1": 0.5,
+        "findings_tp": 1,
+        "findings_fp": 2,
+        "findings_fn": 0
+      },
+      "error": null
+    },
+    {
+      "case": "case-11-thin-sample",
+      "title": "Real edge, but only a handful of trades to judge it on",
+      "which": "advanced",
+      "elapsed_s": 32.65,
+      "human_minutes": 5,
+      "prediction": {
+        "verdict": "edge",
+        "rationale": "OOS Sharpe of 1.2875 exceeds the IS Sharpe of 1.1272 (oos_over_is=1.142) and survives a 5bps cost stress, technically satisfying the EDGE threshold. However, this rests on only n_trades=5, and the walk-forward fold Sharpes swing wildly from -1.22 to 3.08 (regime_like=true), meaning the OOS 'edge' is likely driven by one or two lucky trades rather than a stable process.",
+        "findings": [
+          {
+            "id": "insufficient_trades",
+            "evidence": "trade_count: n_trades=5, adequate=false (below ~30 trade threshold)."
+          },
+          {
+            "id": "regime_dependence",
+            "evidence": "walk_forward: fold_sharpes_fixed=[1.20,3.08,-1.22,2.54,0.80] with regime_like=true, showing swings from strongly positive to negative across folds."
+          },
+          {
+            "id": "robust_oos",
+            "evidence": "oos_test: oos_sharpe=1.2875 (>=0.45) and oos_over_is=1.142 (>=0.6), indicating OOS performance matched or exceeded IS."
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "edge",
+        "findings": [
+          {
+            "id": "insufficient_trades"
+          },
+          {
+            "id": "robust_oos"
+          }
+        ],
+        "rationale": "Real edge, but only a handful of trades to judge it on"
+      },
+      "score": {
+        "verdict_correct": 1.0,
+        "pred_verdict": "edge",
+        "true_verdict": "edge",
+        "precision": 0.667,
+        "recall": 1.0,
+        "f1": 0.8,
+        "findings_tp": 2,
+        "findings_fp": 1,
+        "findings_fn": 0
+      },
+      "error": null
+    },
+    {
+      "case": "case-12-overfit-kitchensink-2",
+      "title": "Another 5-parameter fit on a different random history",
+      "which": "advanced",
+      "elapsed_s": 206.33,
+      "human_minutes": 5,
+      "prediction": {
+        "verdict": "overfit",
+        "rationale": "The strategy's Sharpe ratio collapsed from 1.39 in-sample to -0.70 out-of-sample (oos_over_is -0.506), and walk-forward testing shows extreme instability (fold Sharpes 1.12, 0.88, -2.49, 0.38, 0.66, mean 0.108), with a fragile parameter surface (plateau score 0.517, param_fragile=true) indicating the in-sample edge was a narrow overfit spike tied to a specific regime rather than a robust signal. Do not risk capital on this configuration without re-optimizing on a broader, regime-diverse sample.",
+        "findings": [
+          {
+            "id": "oos_collapse",
+            "evidence": "oos_test: is_sharpe 1.3869 vs oos_sharpe -0.7016, oos_over_is -0.506"
+          },
+          {
+            "id": "param_fragility",
+            "evidence": "implied by the evidence rule"
+          },
+          {
+            "id": "regime_dependence",
+            "evidence": "walk_forward: fold_sharpes_fixed [1.12, 0.88, -2.49, 0.38, 0.66], regime_like true"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "overfit",
+        "findings": [
+          {
+            "id": "oos_collapse"
+          },
+          {
+            "id": "param_fragility"
+          }
+        ],
+        "rationale": "Another 5-parameter fit on a different random history"
+      },
+      "score": {
+        "verdict_correct": 1.0,
+        "pred_verdict": "overfit",
+        "true_verdict": "overfit",
+        "precision": 0.667,
+        "recall": 1.0,
+        "f1": 0.8,
+        "findings_tp": 2,
+        "findings_fp": 1,
+        "findings_fn": 0
+      },
+      "error": null
+    },
+    {
+      "case": "case-13-meanrev-edge-2",
+      "title": "RSI reversion on a faster mean-reverting series",
+      "which": "advanced",
+      "elapsed_s": 48.48,
+      "human_minutes": 5,
+      "prediction": {
+        "verdict": "edge",
+        "rationale": "The strategy passes the core evidence rule with oos_sharpe=1.7486 (well above the 0.45 bar) and oos_over_is=0.911 (above 0.6), indicating the out-of-sample performance retains 91% of in-sample edge; walk-forward folds are all positive (1.22-2.82) and costs survive at 5bps, supporting robustness.",
+        "findings": [
+          {
+            "id": "robust_oos",
+            "evidence": "oos_test: oos_sharpe=1.7486 (>=0.45) and oos_over_is=0.911 (>=0.6)"
+          }
+        ]
+      },
+      "ground_truth": {
+        "verdict": "edge",
+        "findings": [
+          {
+            "id": "robust_oos"
+          }
+        ],
+        "rationale": "RSI reversion on a faster mean-reverting series"
+      },
+      "score": {
+        "verdict_correct": 1.0,
+        "pred_verdict": "edge",
+        "true_verdict": "edge",
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "findings_tp": 1,
+        "findings_fp": 0,
+        "findings_fn": 0
+      },
+      "error": null
+    }
+  ],
+  "aggregates": {
+    "baseline": {
+      "which": "baseline",
+      "n_cases": 13,
+      "n_errors": 0,
+      "primary[verdict_correct]": 0.3846,
+      "precision": 0.2692,
+      "recall": 0.5769,
+      "f1": 0.3436,
+      "avg_runtime_s": 9.1154,
+      "avg_human_minutes": 30.0,
+      "usd_total": 0.1491,
+      "usd_per_case": 0.0115,
+      "cost_detail": {
+        "calls": 13,
+        "input_tokens": 10056,
+        "output_tokens": 7930,
+        "usd": 0.1491,
+        "by_tag": {
+          "baseline": {
+            "calls": 13,
+            "input_tokens": 10056,
+            "output_tokens": 7930,
+            "usd": 0.1491
+          }
+        }
+      }
+    },
+    "advanced": {
+      "which": "advanced",
+      "n_cases": 13,
+      "n_errors": 0,
+      "primary[verdict_correct]": 1.0,
+      "precision": 0.4872,
+      "recall": 0.9231,
+      "f1": 0.6078,
+      "avg_runtime_s": 56.1354,
+      "avg_human_minutes": 5.0,
+      "usd_total": 0.6511,
+      "usd_per_case": 0.0501,
+      "cost_detail": {
+        "calls": 52,
+        "input_tokens": 89310,
+        "output_tokens": 25544,
+        "usd": 0.6511,
+        "by_tag": {
+          "advanced.plan_execute": {
+            "calls": 26,
+            "input_tokens": 48685,
+            "output_tokens": 12030,
+            "usd": 0.3265
+          },
+          "advanced.verify": {
+            "calls": 13,
+            "input_tokens": 29763,
+            "output_tokens": 6949,
+            "usd": 0.1935
+          },
+          "advanced.decide": {
+            "calls": 13,
+            "input_tokens": 10862,
+            "output_tokens": 6565,
+            "usd": 0.1311
+          }
+        }
+      }
+    }
+  }
+}

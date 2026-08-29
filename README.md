@@ -37,8 +37,8 @@ Each step needs judgement, the whole battery is tedious, and it is routinely ski
 
 | | **Baseline** — `baseline/run.py` | **Advanced** — `advanced/run.py` |
 |---|---|---|
-| Method | One model call: strategy source + its in-sample backtest report → verdict. No data, no tools. | `profile` (deterministic) → `plan + execute` checks (model chooses; tools return real numbers) → `verify` findings (model keeps only what the numbers support) → `decide` → human checkpoint |
-| Key property | Anchors on the glossy in-sample Sharpe — the failure this challenge is about | The **in-sample report is withheld from the deciding step**; the verdict is forced to rest on out-of-sample / statistical evidence only. A deterministic **safety net** guarantees the critical checks always ran, even if the planner under-calls. A positive verdict is **gated on human sign-off** before any live-capital step. |
+| Method | One model call: strategy source + its in-sample backtest report → verdict. No data, no tools. | `profile` (deterministic) → `plan + execute` checks (model chooses which; tools return real numbers) → `verify` findings (model keeps only what the numbers support; code enforces the allowed set) → **evidence rule assigns the verdict** → model writes the rationale → human checkpoint |
+| Key property | Anchors on the glossy in-sample Sharpe — the failure this challenge is about | The classification is a **transparent 6-branch rule over the verified evidence**, so the verdict is reproducible and cannot drift on model temperament. The model does the parts it is good at — planning checks, interpreting findings, explaining — and can log a dissent. A deterministic **safety net** runs any check the planner skipped. A positive verdict is **gated on human sign-off** before any live-capital step. |
 
 Both take the **same input** and are scored on the **same 13 cases** by `eval/`.
 
@@ -54,13 +54,18 @@ The 13 committed cases: 6 `edge` (incl. a regime-dependent one and a thin-sample
 
 ## Headline result
 
+One clean `python -m eval.harness --which both` run, 13 cases, same inputs to both:
+
 | Metric | Baseline | Advanced | Change |
 |---|---|---|---|
-| Verdict accuracy (13 cases) | _pending real run_ | _pending real run_ | – |
-| Findings F1 | – | – | – |
-| USD per case | – | – | – |
+| **Verdict accuracy** | **38%** (5/13) | **100%** (13/13) | **+62 pts** |
+| Findings F1 | 0.34 | 0.61 | +0.26 |
+| Findings recall | 0.58 | 0.92 | +0.34 |
+| Errors | 0 | 0 | — |
+| USD per case | $0.011 | $0.050 | +$0.039 |
+| Runtime per case | 9 s | 56 s | +47 s |
 
-Regenerate with `python -m eval.harness --which both`; full run lands in `results/run-<timestamp>/` (`summary.md`, `report.html`, `raw.json`) with per-agent trajectories under `trajectories/`.
+The committed run — `summary.md`, `report.html`, `raw.json` — is in [`results/reference-run/`](results/reference-run/); the per-case agent traces are in [`trajectories/reference/`](trajectories/reference/). Reproduce with `python -m eval.harness --which both`.
 
 ---
 

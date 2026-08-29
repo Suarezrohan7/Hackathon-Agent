@@ -72,10 +72,12 @@ A pre-run copy of these artifacts from the author's environment is committed und
 
 | | Baseline | Advanced |
 |---|---|---|
-| Verdict accuracy (13 cases) | _filled from reference-run_ | _filled from reference-run_ |
-| Findings F1 | – | – |
-| Runtime, all cases | ~1–2 min | ~4–8 min |
-| Cost, `--which both` | ~$_N_ at listed model prices | |
+| Verdict accuracy (13 cases) | **0.385** (5/13) | **1.000** (13/13) |
+| Findings F1 | 0.34 | 0.61 |
+| Runtime, all cases | ~2 min | ~12 min |
+| Cost, `--which both` | ~$0.80 at `claude-sonnet-5` prices | |
+
+Full committed run: `results/reference-run/` (`summary.md`, `report.html`, `raw.json`).
 
 Single case, for a quick look:
 ```bash

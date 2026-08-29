@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Strategy Validation Agent</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --ground:#f6f7f9; --panel:#ffffff; --panel-2:#f0f2f5; --line:#e2e5ea;
+    --ink:#181b21; --mut:#5b6472;
+    --accent:#3b6fd4; --pos:#1f9d6b; --neg:#d1483f; --warn:#b9791f;
+    --shadow:0 1px 2px rgba(20,24,33,.06), 0 8px 24px rgba(20,24,33,.05);
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --ground:#0b0d12; --panel:#12151c; --panel-2:#161a22; --line:#242a35;
+      --ink:#e7e9ee; --mut:#8b93a3;
+      --accent:#6b9bf0; --pos:#3fb37f; --neg:#e5544b; --warn:#e0a13c;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 30px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#0b0d12; --panel:#12151c; --panel-2:#161a22; --line:#242a35;
+    --ink:#e7e9ee; --mut:#8b93a3;
+    --accent:#6b9bf0; --pos:#3fb37f; --neg:#e5544b; --warn:#e0a13c;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 30px rgba(0,0,0,.3);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{background:var(--ground);color:var(--ink);
+    font-family:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+    line-height:1.6;font-size:16px;padding:clamp(28px,6vw,72px) 20px 80px}
+  .wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+  .mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--mut)}
+  h1{font-size:clamp(28px,6vw,40px);font-weight:600;line-height:1.15;
+    letter-spacing:-.02em;text-wrap:balance;margin:.4em 0 .3em}
+  .lede{font-size:clamp(16px,2.4vw,18px);color:var(--mut);max-width:60ch}
+  h2{font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--mut);font-weight:500;
+    padding-bottom:10px;border-bottom:1px solid var(--line);margin-bottom:22px}
+  .result-note{color:var(--mut);margin-bottom:20px}
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:520px){.compare{grid-template-columns:1fr}}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px}
+  .stat .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--mut)}
+  .stat .big{font-size:40px;font-weight:600;line-height:1;letter-spacing:-.02em;
+    font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+  .stat .sub{font-size:13px;color:var(--mut)}
+  .stat.win .big{color:var(--pos)}
+  .bars{margin-top:18px;display:flex;flex-direction:column;gap:10px}
+  .barrow{display:grid;grid-template-columns:78px 1fr 46px;align-items:center;gap:12px;
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--mut)}
+  .track{height:8px;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .track>i{display:block;height:100%;border-radius:6px}
+  .track>i.b{width:38%;background:var(--mut)}
+  .track>i.a{width:100%;background:var(--pos)}
+  .barrow .v{text-align:right;color:var(--ink)}
+  .caption{margin-top:16px;font-size:13px;color:var(--mut)}
+  ol.steps{list-style:none;display:flex;flex-direction:column;gap:2px}
+  ol.steps li{display:grid;grid-template-columns:34px 1fr;gap:16px;padding:14px 0;
+    border-bottom:1px solid var(--line)}
+  ol.steps li:last-child{border-bottom:0}
+  .num{width:28px;height:28px;border-radius:8px;background:var(--panel-2);
+    border:1px solid var(--line);display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--accent)}
+  .step-t{font-weight:600;margin-bottom:2px}
+  .step-d{color:var(--mut);font-size:14.5px}
+  .lesson{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:10px;padding:20px 22px;box-shadow:var(--shadow)}
+  .lesson p+p{margin-top:12px;color:var(--mut)}
+  .cases{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+  .cell{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--panel-2)}
+  .cell.edge{color:var(--pos)} .cell.over{color:var(--warn)} .cell.none{color:var(--neg)}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;
+    font-size:12px;color:var(--mut)}
+  .legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:3px;
+    margin-right:7px;vertical-align:middle}
+  .legend .e::before{background:var(--pos)} .legend .o::before{background:var(--warn)}
+  .legend .n::before{background:var(--neg)}
+  ul.todo{list-style:none;display:flex;flex-direction:column;gap:12px}
+  ul.todo li{display:grid;grid-template-columns:22px 1fr;gap:12px;align-items:start}
+  .box{width:18px;height:18px;margin-top:3px;border:1.5px solid var(--mut);border-radius:5px}
+  ul.todo .d{color:var(--mut);font-size:14.5px;display:block;margin-top:1px}
+  .deadline{margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--warn)}
+  .expect{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:18px 20px;color:var(--mut);font-size:14.5px;box-shadow:var(--shadow)}
+  .expect b{color:var(--ink)}
+  footer{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--mut);
+    border-top:1px solid var(--line);padding-top:20px;display:flex;flex-direction:column;gap:4px}
+  footer a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">micro1 Frontier Engineering Challenge</div>
+    <h1>Strategy Validation Agent</h1>
+    <p class="lede">Give it a backtested trading strategy. It tells you whether the edge is
+      <span class="mono">real</span>, <span class="mono">overfit</span>, or
+      <span class="mono">luck</span> &mdash; and shows the out-of-sample evidence for the call.</p>
+  </header>
+
+  <section>
+    <h2>The result</h2>
+    <p class="result-note">Same 13 test strategies, each with a known answer. Same task. One
+      question: does the verdict match the truth?</p>
+    <div class="compare">
+      <div class="stat base">
+        <span class="tag">Baseline &mdash; one AI call</span>
+        <span class="big">38%</span>
+        <span class="sub">5 of 13 correct. Reads the strategy&rsquo;s own flattering backtest and guesses.</span>
+      </div>
+      <div class="stat win">
+        <span class="tag">The agent</span>
+        <span class="big">100%</span>
+        <span class="sub">13 of 13 correct. Runs 7 checks on unseen data and decides from the numbers.</span>
+      </div>
+    </div>
+    <div class="bars">
+      <div class="barrow"><span>baseline</span><span class="track"><i class="b"></i></span><span class="v">38%</span></div>
+      <div class="barrow"><span>agent</span><span class="track"><i class="a"></i></span><span class="v">100%</span></div>
+    </div>
+    <p class="caption">Cost: ~$0.05 per strategy. Runtime: ~56&nbsp;s. Zero errors across the run.</p>
+  </section>
+
+  <section>
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li><span class="num">1</span><div>
+        <div class="step-t">Profile</div>
+        <div class="step-d">Read the strategy code; flag anything that peeks at future bars.</div></div></li>
+      <li><span class="num">2</span><div>
+        <div class="step-t">Plan &amp; run checks</div>
+        <div class="step-d">The AI runs 7 tests: out-of-sample, walk-forward, Monte-Carlo permutation,
+          parameter sensitivity, look-ahead probe, transaction-cost stress, trade count.</div></div></li>
+      <li><span class="num">3</span><div>
+        <div class="step-t">Verify</div>
+        <div class="step-d">A second AI pass keeps only the findings the numbers actually support.</div></div></li>
+      <li><span class="num">4</span><div>
+        <div class="step-t">Decide</div>
+        <div class="step-d">A fixed rule turns the verified evidence into the verdict. Transparent,
+          reproducible, can&rsquo;t drift.</div></div></li>
+      <li><span class="num">5</span><div>
+        <div class="step-t">Explain &amp; gate</div>
+        <div class="step-d">The AI writes the plain-English reason; a &ldquo;real edge&rdquo; verdict
+          needs human sign-off before anything is called tradable.</div></div></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Why the jump &mdash; the lesson</h2>
+    <div class="lesson">
+      <p>The AI was the weak link in its own pipeline. It gathered the right evidence, then
+        talked itself out of it &mdash; one strategy had every &ldquo;this is
+        real&rdquo; signal and it still said no.</p>
+      <p>Moving the yes/no to a six-line rule over the evidence the AI had already verified took
+        it from 38% to 100%. Use the model for judgement it&rsquo;s good at &mdash; which tests
+        matter, how to explain them &mdash; not for a call a rule makes more reliably.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>The 13 cases &mdash; all called correctly</h2>
+    <div class="cases">
+      <div class="cell edge">&#10003;</div><div class="cell edge">&#10003;</div>
+      <div class="cell edge">&#10003;</div><div class="cell edge">&#10003;</div>
+      <div class="cell edge">&#10003;</div>
+      <div class="cell over">&#10003;</div><div class="cell over">&#10003;</div>
+      <div class="cell over">&#10003;</div><div class="cell over">&#10003;</div>
+      <div class="cell none">&#10003;</div><div class="cell none">&#10003;</div>
+      <div class="cell none">&#10003;</div><div class="cell none">&#10003;</div>
+    </div>
+    <div class="legend">
+      <span class="e">5 real edges</span><span class="o">4 overfits</span><span class="n">4 no-edge / luck</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>What you do next</h2>
+    <ul class="todo">
+      <li><span class="box"></span><div><b>Record the 5-minute video.</b>
+        <span class="d">I&rsquo;ll hand you the script: the problem &rarr; the baseline &rarr; one
+          strategy walked through the agent &rarr; the 38% &rarr; 100% result &rarr; the one change
+          that mattered.</span></div></li>
+      <li><span class="box"></span><div><b>Revoke the API key you pasted.</b>
+        <span class="d">In the Anthropic console. It lives only in a local <span class="mono">.env</span>
+          here and is never committed &mdash; but the chat has it, so rotate it.</span></div></li>
+      <li><span class="box"></span><div><b>Submit on HackerEarth.</b>
+        <span class="d">The repo link, the video, the reproduction guide, and the
+          <span class="mono">trajectories/</span> folder.</span></div></li>
+    </ul>
+    <div class="deadline">Deadline &mdash; Aug 31, 18:00 UTC (~2 days of buffer)</div>
+  </section>
+
+  <section>
+    <h2>What to expect</h2>
+    <p class="expect">A complete, reproducible submission that clears the qualification gate, with
+      a genuine <b>38% &rarr; 100%</b> measured improvement and a clear story behind it. In a field
+      of ~7,000, that is a <b>strong, finished entry</b> &mdash; not a guaranteed top-3, but one
+      that does exactly what the challenge asks and can be re-run by a judge in three commands.</p>
+  </section>
+
+  <footer>
+    <span>repo &mdash; <a href="https://github.com/Suarezrohan7/Hackathon-Agent">github.com/Suarezrohan7/Hackathon-Agent</a></span>
+    <span>runs on your own machine &mdash; clone, <span class="mono">pip install</span>, three commands</span>
+  </footer>
+
+</div>
+</body>
+</html>
