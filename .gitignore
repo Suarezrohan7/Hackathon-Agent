@@ -9,3 +9,5 @@ results/app/
 trajectories/*
 !trajectories/.gitkeep
 !trajectories/reference/
+!trajectories/README.md
+!trajectories/BUILD_LOG.md
