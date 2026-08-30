@@ -99,9 +99,10 @@
 
   .board{display:flex;flex-direction:column;gap:14px;perspective:900px}
   .brow{display:flex;align-items:center;gap:10px}
-  .brow .who{width:90px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--mut);
+  .brow .who{width:90px;flex:0 0 90px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--mut);
     text-transform:uppercase;letter-spacing:.08em}
-  .cell{width:clamp(22px,2.6vw,34px);height:clamp(22px,2.6vw,34px);border-radius:7px;background:var(--grid);
+  .brow>span:last-child{display:inline-flex;flex-wrap:wrap;gap:6px}
+  .cell{display:inline-block;width:clamp(22px,2.6vw,34px);height:clamp(22px,2.6vw,34px);border-radius:7px;background:var(--grid);
     border:1px solid #1f2733;opacity:0;transform:rotateY(90deg)}
   .slide.active .cell{animation:flip .5s cubic-bezier(.3,.7,.3,1) forwards;animation-delay:calc(var(--i)*.055s + var(--rowd,0s))}
   @keyframes flip{to{opacity:1;transform:none}}
@@ -322,7 +323,7 @@
     el.textContent=Math.round(to*(1-Math.pow(1-k,3)));k<1?requestAnimationFrame(s):end&&end();})(t0);}
 
   const slides=$$(".slide");
-  const T=[5200,6000,4600,7000,9500,5600,15800,9000,10000,8500,34000,10000];
+  const T=[5200,6000,4600,7000,9500,5600,15800,9000,10000,8500,8500,34000,11000];
   const bar=$("#bar"),dots=$("#dots"),chap=$("#chap"),sweep=$("#sweep");
   slides.forEach(()=>dots.appendChild(document.createElement("i")));
   const di=[...dots.children]; let idx=-1,timer=null,playing=true;
@@ -341,10 +342,12 @@
     chap.style.opacity = (i===LIVE) ? "0" : "1";
     const c=CH[i]||[56,189,248]; tgt=[c[0],c[1],c[2]];
     gtx=(i%3)*.25+.3; gty=((i>>1)%2)*.25+.35;
-    if(i===5){const el=s.querySelector("#bcount");el.textContent="0";
-      setTimeout(()=>countUp(el,38,1100,()=>s.querySelector("#bnum").classList.add("land")),300);}
-    if(i===6){const el=s.querySelector("#acount");el.textContent="0";
-      setTimeout(()=>countUp(el,100,1500,()=>s.querySelector("#bm").classList.add("land")),1900);}
+    const bc=s.querySelector("#bcount");
+    if(bc){bc.textContent="0";
+      setTimeout(()=>countUp(bc,38,1100,()=>{const n=s.querySelector("#bnum");if(n)n.classList.add("land");}),300);}
+    const ac=s.querySelector("#acount");
+    if(ac){ac.textContent="0";
+      setTimeout(()=>countUp(ac,100,1500,()=>{const n=s.querySelector("#bm");if(n)n.classList.add("land");}),1900);}
     if(i===LIVE){ $("#live").src="/?demo&t="+Date.now(); }
     else { const f=$("#live"); if(f && f.src.indexOf("about:blank")<0 && idx<LIVE) f.src="about:blank"; }
     schedule();
