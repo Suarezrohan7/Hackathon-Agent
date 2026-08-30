@@ -306,8 +306,14 @@ summary{cursor:pointer;padding:12px 16px;color:var(--mut);font-size:12.5px;
   font-family:'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase}
 details pre{margin:0;padding:14px 16px;border-top:1px solid var(--line);max-height:420px;overflow:auto;
   font:12px/1.5 'IBM Plex Mono',monospace;color:var(--mut);white-space:pre-wrap}
+.autobadge{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:20;
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--acc);border:1px solid #2b5f78;border-radius:999px;padding:6px 16px;
+  background:rgba(56,189,248,.08);opacity:0;pointer-events:none;transition:opacity .4s}
+body.autodemo .autobadge{opacity:1}
+body.autodemo .go,body.autodemo .sc{pointer-events:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-</style></head><body><div class="wrap">
+</style></head><body><div class="autobadge">&#9654; auto demo</div><div class="wrap">
 
 <header>
   <h1>Strategy Validation Agent</h1>
@@ -382,7 +388,26 @@ async function scorecard(){
 }
 scorecard();
 
-$("#go").onclick=async()=>{
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function pick(caseId,ds){await sample(caseId);$("#dataset").value=ds;}
+
+async function runDemo(loop){
+  document.body.classList.add("autodemo");
+  window.scrollTo({top:0,behavior:"smooth"}); await sleep(700);
+  await pick("case-06-lookahead-bug","sample:case-06-lookahead-bug"); await sleep(1600);
+  await validate();  await sleep(3400);          // OVERFIT — look-ahead flags red
+  await pick("case-13-meanrev-edge-2","sample:case-13-meanrev-edge-2"); await sleep(1600);
+  await validate();  await sleep(3200);          // EDGE + human gate
+  document.querySelector(".scorecard").scrollIntoView({behavior:"smooth",block:"center"}); await sleep(4500);
+  document.body.classList.remove("autodemo");
+  if(loop){ await sleep(2500); runDemo(true); }
+}
+addEventListener("keydown",e=>{ if(e.key.toLowerCase()==="d") runDemo(false); });
+if(location.search.indexOf("demo")>=0){
+  addEventListener("load",()=>setTimeout(()=>runDemo(location.search.indexOf("loop")>=0),1400));
+}
+
+async function validate(){
   const btn=$("#go"); btn.disabled=true; btn.textContent="Validating…";
   const P=$("#panel");
   P.innerHTML=`<div class="checks" id="checks"></div>`;
@@ -429,7 +454,8 @@ $("#go").onclick=async()=>{
     if(j.trajectory)$("#traj").textContent=j.trajectory;
   }catch(e){P.innerHTML=`<div class="err">${e}</div>`;}
   finally{btn.disabled=false;btn.textContent="Validate";}
-};
+}
+$("#go").onclick=validate;
 </script></body></html>"""
 
 
