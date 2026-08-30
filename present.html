@@ -338,6 +338,7 @@
     bar.style.width=(i/(slides.length-1)*100)+"%";
     chap.innerHTML=(s.dataset.chap||"").replace(/^(\S+)/,"<b>$1</b>");
     sweep.classList.remove("go"); void sweep.offsetWidth; sweep.classList.add("go");
+    chap.style.opacity = (i===LIVE) ? "0" : "1";
     const c=CH[i]||[56,189,248]; tgt=[c[0],c[1],c[2]];
     gtx=(i%3)*.25+.3; gty=((i>>1)%2)*.25+.35;
     if(i===5){const el=s.querySelector("#bcount");el.textContent="0";
