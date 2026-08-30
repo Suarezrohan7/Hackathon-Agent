@@ -5,3 +5,4 @@ numpy>=1.26
 pandas>=2.1
 pytest>=8.0
 flask>=3.0
+rich>=13.0

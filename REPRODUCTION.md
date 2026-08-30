@@ -7,7 +7,7 @@ whole project is this repository. Clone it, install, run three commands.
 
 | | |
 |---|---|
-| Python | 3.11+ (developed on 3.11) |
+| Python | 3.9+ (developed on 3.9.5) |
 | API key | one `ANTHROPIC_API_KEY` with Claude Sonnet access — you supply your own, as the challenge requires |
 | OS | Windows / macOS / Linux (developed on Windows 11) |
 | Data | none to download — the 13 labelled test cases are committed under `cases/case-*/` |
