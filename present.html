@@ -314,7 +314,7 @@
   $("#closeline").innerHTML="an agent can gather exactly the right evidence and still reach the wrong answer.  the fix was not a better prompt."
     .split(" ").map((w,i)=>`<span class="word" style="--i:${i}">${w}</span>`).join(" ");
 
-  const B=[1,1,0,1,1,1,0,0,0,1,0,1,0];
+  const B=[0,0,0,1,1,1,1,0,0,0,0,1,0];
   (function(){const rb=$("#row-b"),ra=$("#row-a");for(let i=0;i<13;i++){
     const b=document.createElement("span");b.className="cell "+(B[i]?"ok":"no");b.style.setProperty("--i",i);rb.appendChild(b);
     const a=document.createElement("span");a.className="cell ok";a.style.setProperty("--i",i);a.style.setProperty("--rowd",".95s");ra.appendChild(a);}})();
