@@ -290,10 +290,12 @@ select{width:100%;font:13px inherit;border-radius:9px;border:1px solid var(--lin
 
 /* scorecard grid */
 .scorecard{margin-top:26px}
-.sgrid{display:flex;flex-direction:column;gap:6px}
-.srow{display:flex;align-items:center;gap:8px}
-.srow .who{width:74px;font-size:11px;color:var(--mut);font-family:'IBM Plex Mono',monospace;text-transform:uppercase}
-.cell{width:26px;height:26px;border-radius:6px;border:1px solid var(--line);background:var(--panel2)}
+.sgrid{display:flex;flex-direction:column;gap:8px}
+.srow{display:flex;align-items:center;gap:10px}
+.srow .who{width:74px;flex:0 0 74px;font-size:11px;color:var(--mut);font-family:'IBM Plex Mono',monospace;text-transform:uppercase}
+.srow>span:last-child{display:inline-flex;flex-wrap:wrap;gap:6px}
+.cell{display:inline-block;width:28px;height:28px;border-radius:7px;border:1px solid #1f2733;background:var(--panel2);
+  transition:transform .4s cubic-bezier(.3,.7,.3,1), opacity .4s}
 .cell.ok{background:var(--ok-dim);border-color:#12513a}
 .cell.no{background:var(--no-dim);border-color:#4a1c1c}
 .scap{color:var(--mut);font-size:12.5px;margin-top:10px}
