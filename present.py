@@ -13,29 +13,52 @@ record. ~4.5 min. Ctrl+C in this terminal when you're done to stop the server.
 
 from __future__ import annotations
 
+import os
+import re
 import subprocess
 import sys
 import time
+import urllib.error
 import urllib.request
 import webbrowser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-URL = "http://127.0.0.1:7600/present"
+PORT = 7600
+URL = f"http://127.0.0.1:{PORT}/present"
 
 
 def up() -> bool:
     try:
         urllib.request.urlopen(URL, timeout=1).read(1)
         return True
+    except urllib.error.HTTPError:
+        return False           # something is answering, but not our route -> stale
     except Exception:
         return False
+
+
+def free_port() -> None:
+    """Kill anything already sitting on the port (usually a stale server without the route)."""
+    if os.name != "nt":
+        subprocess.run(["bash", "-lc", f"fuser -k {PORT}/tcp"], capture_output=True)
+        return
+    out = subprocess.run(["netstat", "-ano"], capture_output=True, text=True).stdout
+    pids = {m.group(1) for ln in out.splitlines() if f":{PORT} " in ln
+            for m in [re.search(r"(\d+)\s*$", ln)] if m}
+    for pid in pids:
+        subprocess.run(["taskkill", "/F", "/PID", pid], capture_output=True)
+    if pids:
+        time.sleep(1)
 
 
 def main() -> None:
     started_here = False
     proc = None
-    if not up():
+    if up():
+        print("dashboard already serving the presentation.")
+    else:
+        free_port()
         print("starting the dashboard server …")
         proc = subprocess.Popen([sys.executable, str(ROOT / "app.py")], cwd=ROOT,
                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
