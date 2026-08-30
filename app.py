@@ -19,7 +19,7 @@ import uuid
 from pathlib import Path
 
 import pandas as pd
-from flask import Flask, jsonify, render_template_string, request
+from flask import Flask, Response, jsonify, render_template_string, request
 
 from advanced.checks import REGISTRY
 from advanced.run import (_build_ctx, _digest, _profile, derive_findings,
@@ -118,6 +118,14 @@ def _stage_case(code: str, dataset: str) -> Path:
 @app.get("/")
 def index():
     return render_template_string(PAGE, example=EXAMPLE, cases=CASES, model=MODEL, has_key=not _mock())
+
+
+@app.get("/present")
+def present():
+    p = ROOT / "present.html"
+    if not p.exists():
+        return "present.html not found", 404
+    return Response(p.read_text(encoding="utf-8"), mimetype="text/html")
 
 
 @app.get("/api/sample/<case_id>")
