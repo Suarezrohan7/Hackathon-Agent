@@ -56,15 +56,20 @@ def wait(s: float) -> None:
     time.sleep(s * SLOW)
 
 
-def typeout(text: str, style: str, delay: float = 0.018) -> None:
-    for i in range(len(text) + 1):
-        con.print(Text(text[:i], style=style), end="\r")
+def hardclear() -> None:
+    os.system("cls" if os.name == "nt" else "clear")   # cmd.exe won't wipe otherwise
+    con.clear()
+
+
+def typeout(text: str, style: str, delay: float = 0.02) -> None:
+    for i in range(1, len(text) + 1):
+        con.print(Text(text[:i], style=style), end="\r", soft_wrap=True)
         time.sleep(delay * SLOW)
     con.print(Text(text, style=style))
 
 
 def beat(n: int, title: str, hold: float = 2.2) -> None:
-    con.clear()
+    hardclear()
     con.print()
     con.print(Rule(Text(f"  {n} / 7    {title}  ", style=HEAD), style=ACC, characters="─"))
     con.print()
@@ -78,18 +83,19 @@ def para(text: str, style: str = INK) -> None:
 
 # -----------------------------------------------------------------------------
 def title_card() -> None:
-    con.clear()
+    hardclear()
     con.print("\n\n\n")
-    inner = Group(
-        Align.center(Text("STRATEGY  VALIDATION  AGENT", style=f"bold {ACC}")),
-        Align.center(Text("")),
-        Align.center(Text("a backtest looks great.  is the edge real, overfit, or luck?", style=INK)),
-    )
-    con.print(Panel(inner, border_style=ACC, padding=(2, 8), width=84), justify="center")
-    con.print()
+    spark = "".join("▁▂▃▄▅▆▇█"[min(7, int(v))] for v in
+                    (0, 0, 1, 1, 2, 1, 2, 3, 3, 4, 3, 5, 5, 6, 5, 7, 7, 6, 7, 7))
+    con.print(Align.center(Text(spark, style=ACC)))
+    con.print(Align.center(Text("a backtest.  + 240 %.  Sharpe 1.9.", style=DIM)))
+    con.print("\n")
+    con.print(Align.center(Text("STRATEGY  VALIDATION  AGENT", style=f"bold {ACC}")))
+    con.print(Align.center(Text("is the edge real, or overfit, or luck?  —  decided from evidence", style=INK)))
+    con.print("\n")
     con.print(Align.center(Text("micro1 Frontier Engineering Challenge   ·   built with a coding agent", style=DIM)))
     con.print("\n\n")
-    wait(5)
+    wait(5.5)
 
 
 def problem() -> None:
@@ -177,14 +183,16 @@ def live_validation() -> None:
 
     vstyle = OK if verdict == "edge" else (NO if verdict == "no_edge" else WRN)
     con.print()
-    con.print(Text("   VERDICT   ", style=f"reverse {vstyle}"),
-              Text(f" {verdict.upper()}", style=f"bold {vstyle}"),
-              Text(f"   {reason}", style=DIM))
-    if findings:
-        con.print(Text("   findings   ", style="reverse " + ACC),
-                  Text("  " + ", ".join(f["id"] for f in findings), style=INK))
-    con.print(Text("   HUMAN GATE ", style=f"reverse {WRN}"),
-              Text("  positive verdict → held for human sign-off before any live capital", style=WRN))
+    body = Group(
+        Text(verdict.upper(), style=f"bold {vstyle}"),
+        Text(reason, style=DIM),
+        Text("findings: " + (", ".join(f["id"] for f in findings) or "none"), style=INK),
+    )
+    con.print(Panel(body, title="[bold]VERDICT[/]  ·  assigned by rule over the verified evidence",
+                    border_style=vstyle, padding=(1, 3)))
+    if verdict == "edge":
+        con.print(Panel(Text("held for human sign-off before any live capital", style=WRN),
+                        border_style=WRN, padding=(0, 3), title="[bold yellow]HUMAN GATE[/]"))
     con.print()
     para("The model plans which checks matter and writes the rationale.  A transparent\n"
          "rule reads the verified evidence and assigns the verdict.  The model never\n"
